@@ -1,41 +1,64 @@
+
+using System;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Caching.Memory;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ----------------- API ---------------------
+var openWeatherKey = builder.Configuration["dad23e35b200f69a69c7df5efa05bf0f"];
+if (string.IsNullOrWhiteSpace(openWeatherKey))
+    throw new Exception("API KEY NOT WORKING");
 
+builder.Services.AddHttpClient("openWeahter", c =>
+{
+    c.BaseAddress = new Uri("https://api.openweathermap.org/");
+});
+builder.Services.AddMemoryCache();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddLogging();
 var app = builder.Build();
+app.MapGet("/api/geocode", async (string query, IHttpClientFactory http, IMemoryCache cache) =>
+{
+    var cachekey = $"geo:{query}";
+    if (!cache.TryGetValue(cachekey, out object? result))
+    {
+        var url = $"geo/1.0/direct?q={Uri.EscapeDataString(query)}&limit=5&appid={openWeatherKey}";
+        result = await http.CreateClient("openWeather").GetStringAsync(url);
+    }
+});
 
-// Configure the HTTP request pipeline.
+app.MapGet("/api/weather", async (double lat, double lon, string units, string lang,
+    IHttpClientFactory http, IMemoryCache cache) =>
+{
+    var unit = string.IsNullOrWhiteSpace(units) ? "metric" : units;
+    var language = string.IsNullOrWhiteSpace(lang) ? "en" : lang;
+
+    var cacheKey = $"wx:{lat:F4},{lon:F4}:{unit}:{language}";
+    if (!cache.TryGetValue(cacheKey, out object? result))
+    {
+        var url = $"data/2.5/weather?lat={lat}&lon={lon}&units={unit}&lang={language}&appid={openWeatherKey}";
+        using var resp = await http.CreateClient("owm").GetAsync(url);
+        if (!resp.IsSuccessStatusCode)
+            return Results.Problem($"OpenWeather returned {(int)resp.StatusCode}: {await resp.Content.ReadAsStringAsync()}");
+
+        result = await resp.Content.ReadAsStringAsync();
+        cache.Set(cacheKey, result!, TimeSpan.FromSeconds(60));
+    }
+    return Results.Content((string)result!, "application/json");
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
