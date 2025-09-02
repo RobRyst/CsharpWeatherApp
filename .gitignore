@@ -1,0 +1,16 @@
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.swp
+*.userprefs
+.vscode/
+*.db
+*.DS_Store
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.cache/
