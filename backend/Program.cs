@@ -1,26 +1,38 @@
 using System;
+using backend.Domains.Interfaces;
+using backend.Infrastructure.Data;
+using backend.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---- Config ----
 var apiKey = builder.Configuration["OpenWeather:ApiKey"]
           ?? builder.Configuration["OPENWEATHER_API_KEY"];
 if (string.IsNullOrWhiteSpace(apiKey))
     throw new Exception("API KEY NOT WORKING: set OpenWeather:ApiKey or OPENWEATHER_API_KEY");
 
-// ---- Services ----
 builder.Services.AddHttpClient("openweather", c =>
 {
     c.BaseAddress = new Uri("https://api.openweathermap.org/");
 });
 builder.Services.AddMemoryCache();
+builder.Services.AddDbContext<AppDbContext>(opt =>
+{
+    var cs = builder.Configuration.GetConnectionString("Default")
+             ?? throw new InvalidOperationException("Missing ConnectionStrings:Default");
+    opt.UseMySql(cs, ServerVersion.AutoDetect(cs));
+});
 
+builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.Logger.LogInformation("OpenWeather key loaded (len={Len}, endsWith=****{Tail})",
+    apiKey.Length, apiKey[^4..]);
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,8 +40,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.MapGet("/api/openweather/geocode", async (string query, IHttpClientFactory http, IMemoryCache cache) =>
 {
@@ -87,7 +97,8 @@ app.MapGet("/api/openweather/current", async (double lat, double lon, string? un
 })
 .WithName("OpenWeatherCurrent")
 .WithTags("OpenWeather");
-// ---------------------------------------------------------
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { ok = true, time = DateTimeOffset.UtcNow }));
+
 app.Run();
