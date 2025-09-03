@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using backend.Services;
 using backend.Domains.Interfaces;
 
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class WeatherController : ControllerBase
     {
         private readonly ILogger<WeatherController> _logger;
@@ -17,6 +16,7 @@ namespace backend.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetWeather()
         {
             try

@@ -1,16 +1,16 @@
-
 using System;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------- API ---------------------
-var openWeatherKey = builder.Configuration["dad23e35b200f69a69c7df5efa05bf0f"];
-if (string.IsNullOrWhiteSpace(openWeatherKey))
-    throw new Exception("API KEY NOT WORKING");
+// ---- Config ----
+var apiKey = builder.Configuration["OpenWeather:ApiKey"]
+          ?? builder.Configuration["OPENWEATHER_API_KEY"];
+if (string.IsNullOrWhiteSpace(apiKey))
+    throw new Exception("API KEY NOT WORKING: set OpenWeather:ApiKey or OPENWEATHER_API_KEY");
 
-builder.Services.AddHttpClient("openWeahter", c =>
+// ---- Services ----
+builder.Services.AddHttpClient("openweather", c =>
 {
     c.BaseAddress = new Uri("https://api.openweathermap.org/");
 });
@@ -20,45 +20,74 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddLogging();
 var app = builder.Build();
-app.MapGet("/api/geocode", async (string query, IHttpClientFactory http, IMemoryCache cache) =>
-{
-    var cachekey = $"geo:{query}";
-    if (!cache.TryGetValue(cachekey, out object? result))
-    {
-        var url = $"geo/1.0/direct?q={Uri.EscapeDataString(query)}&limit=5&appid={openWeatherKey}";
-        result = await http.CreateClient("openWeather").GetStringAsync(url);
-    }
-});
-
-app.MapGet("/api/weather", async (double lat, double lon, string units, string lang,
-    IHttpClientFactory http, IMemoryCache cache) =>
-{
-    var unit = string.IsNullOrWhiteSpace(units) ? "metric" : units;
-    var language = string.IsNullOrWhiteSpace(lang) ? "en" : lang;
-
-    var cacheKey = $"wx:{lat:F4},{lon:F4}:{unit}:{language}";
-    if (!cache.TryGetValue(cacheKey, out object? result))
-    {
-        var url = $"data/2.5/weather?lat={lat}&lon={lon}&units={unit}&lang={language}&appid={openWeatherKey}";
-        using var resp = await http.CreateClient("owm").GetAsync(url);
-        if (!resp.IsSuccessStatusCode)
-            return Results.Problem($"OpenWeather returned {(int)resp.StatusCode}: {await resp.Content.ReadAsStringAsync()}");
-
-        result = await resp.Content.ReadAsStringAsync();
-        cache.Set(cacheKey, result!, TimeSpan.FromSeconds(60));
-    }
-    return Results.Content((string)result!, "application/json");
-});
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
 
+app.MapGet("/api/openweather/geocode", async (string query, IHttpClientFactory http, IMemoryCache cache) =>
+{
+    if (string.IsNullOrWhiteSpace(query))
+        return Results.BadRequest(new { error = "query is required" });
+
+    var cacheKey = $"geo:{query}";
+    if (!cache.TryGetValue(cacheKey, out string? result))
+    {
+        var url = $"geo/1.0/direct?q={Uri.EscapeDataString(query)}&limit=5&appid={apiKey}";
+        using var resp = await http.CreateClient("openweather").GetAsync(url);
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync();
+            return Results.Problem(
+                detail: $"OpenWeather returned {(int)resp.StatusCode}: {body}",
+                statusCode: (int)resp.StatusCode,
+                title: "OpenWeather error");
+        }
+
+        result = await resp.Content.ReadAsStringAsync();
+        cache.Set(cacheKey, result, TimeSpan.FromSeconds(60));
+    }
+    return Results.Content(result!, "application/json");
+})
+.WithName("OpenWeatherGeocode")
+.WithTags("OpenWeather");
+
+app.MapGet("/api/openweather/current", async (double lat, double lon, string? units, string? lang,
+    IHttpClientFactory http, IMemoryCache cache) =>
+{
+    var unit = string.IsNullOrWhiteSpace(units) ? "metric" : units!;
+    var language = string.IsNullOrWhiteSpace(lang) ? "en" : lang!;
+
+    var cacheKey = $"wx:{lat:F4},{lon:F4}:{unit}:{language}";
+    if (!cache.TryGetValue(cacheKey, out string? result))
+    {
+        var url = $"data/2.5/weather?lat={lat}&lon={lon}&units={unit}&lang={language}&appid={apiKey}";
+        using var resp = await http.CreateClient("openweather").GetAsync(url);
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync();
+            return Results.Problem(
+                detail: $"OpenWeather returned {(int)resp.StatusCode}: {body}",
+                statusCode: (int)resp.StatusCode,
+                title: "OpenWeather error");
+        }
+
+        result = await resp.Content.ReadAsStringAsync();
+        cache.Set(cacheKey, result, TimeSpan.FromSeconds(60));
+    }
+    return Results.Content(result!, "application/json");
+})
+.WithName("OpenWeatherCurrent")
+.WithTags("OpenWeather");
+// ---------------------------------------------------------
+
+app.MapControllers();
 app.Run();
