@@ -1,4 +1,3 @@
-// backend/Domains/Mapping/WeatherMapping.cs
 using backend.Domains.Entities;
 using backend.Domains.Models;
 using backend.Dtos;
