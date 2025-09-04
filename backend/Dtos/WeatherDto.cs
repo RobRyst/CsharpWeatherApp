@@ -2,7 +2,7 @@ namespace backend.Dtos
 {
     public sealed class WeatherDto
     {
-        // Weather
+        // Utility Variables
         public int Id { get; init; }
         public int LocationId { get; init; }
         public string Description { get; init; } = null!;

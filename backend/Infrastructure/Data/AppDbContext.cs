@@ -1,4 +1,3 @@
-// backend/Infrastructure/Data/AppDbContext.cs
 using backend.Domains.Entities;
 using Microsoft.EntityFrameworkCore;
 
