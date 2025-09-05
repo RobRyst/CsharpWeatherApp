@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace backend.Auth
+namespace backend.Domains.Interfaces
 {
     public interface ITokenService
     {

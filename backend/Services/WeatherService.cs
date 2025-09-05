@@ -1,4 +1,3 @@
-// backend/Services/WeatherService.cs
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using backend.Domains.Interfaces;

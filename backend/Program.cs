@@ -57,7 +57,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
-
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 

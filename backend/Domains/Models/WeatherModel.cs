@@ -1,4 +1,3 @@
-// backend/Domains/Models/WeatherModel.cs
 namespace backend.Domains.Models
 {
     public sealed class WeatherModel
