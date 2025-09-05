@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Domains.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WeatherController : ControllerBase
     {
         private readonly ILogger<WeatherController> _logger;

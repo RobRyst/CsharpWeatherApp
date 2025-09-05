@@ -3,7 +3,7 @@ import { StaticScreenProps } from "@react-navigation/native";
 import { StyleSheet, View } from "react-native";
 
 type Props = StaticScreenProps<{
-  user: string;
+  user: string,
 }>;
 
 export function Profile({ route }: Props) {
