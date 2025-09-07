@@ -38,7 +38,6 @@ namespace backend.Controllers
             [FromQuery] int hours = 24, [FromQuery] string units = "metric", [FromQuery] string lang = "en")
         {
             if (lat == 0 && lon == 0) return BadRequest(new { error = "lat and lon are required" });
-
             try
             {
                 var data = await _weatherService.GetHourlyForecastAsync(lat, lon, hours, units, lang);

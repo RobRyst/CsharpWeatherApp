@@ -9,7 +9,7 @@ namespace backend.Domains.Entities
         [MaxLength(64)]
         public required string Username { get; set; }
 
-        [MaxLength(256)]
+        [MaxLength(256), EmailAddress]
         public required string Email { get; set; }
 
         [MaxLength(256)]

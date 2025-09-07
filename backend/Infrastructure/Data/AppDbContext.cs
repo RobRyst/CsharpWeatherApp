@@ -12,12 +12,13 @@ namespace backend.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<User>()
-                .HasIndex(user => user.Username)
+                .HasIndex(u => u.Username)
                 .IsUnique();
 
             modelBuilder.Entity<User>()
-                .HasIndex(user => user.Email)
+                .HasIndex(u => u.Email)
                 .IsUnique();
         }
     }

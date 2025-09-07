@@ -1,37 +1,71 @@
 using System.Security.Claims;
+using backend.Auth;
 using backend.Domains.Interfaces;
+using backend.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(ITokenService tokenService, ILogger<AuthController> logger) : ControllerBase
+    public class AuthController(IUserService users, ITokenService tokenService, ILogger<AuthController> logger) : ControllerBase
     {
-        public record LoginRequest(string Username, string Password);
-        public record TokenResponse(string AccessToken, string TokenType, int ExpiresIn);
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<ActionResult<UserDto>> Register([FromBody] CreateUserRequest req, CancellationToken ct)
+        {
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            try
+            {
+                var created = await users.CreateAsync(req, ct);
+                logger.LogInformation("User registered: {User}", created.Username);
+                return CreatedAtAction(nameof(GetMe), new { }, created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+        }
 
         [AllowAnonymous]
-        [HttpPost("token")]
-        public IActionResult CreateToken([FromBody] LoginRequest req)
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthTokenResponse>> Login([FromBody] LoginRequest req, CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
-                return BadRequest(new { error = "username and password are required" });
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-            if (!(req.Username == "admin" && req.Password == "weather"))
+            var (ok, user, role) = await users.ValidateCredentialsAsync(req.UsernameOrEmail, req.Password, ct);
+            if (!ok || user is null)
                 return Unauthorized(new { error = "invalid credentials" });
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, req.Username),
-                new Claim(ClaimTypes.Name, req.Username),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, role ?? "User")
             };
 
             var jwt = tokenService.CreateToken(claims);
-            logger.LogInformation("Issued token for {User}", req.Username);
-            return Ok(new TokenResponse(jwt, "Bearer", 60 * 60));
+            logger.LogInformation("Issued token for {User}", user.Username);
+
+            return Ok(new AuthTokenResponse { AccessToken = jwt, TokenType = "Bearer", ExpiresIn = 60 * 60 });
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public ActionResult<object> GetMe()
+        {
+            var me = new
+            {
+                id = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                username = User.Identity?.Name,
+                email = User.FindFirstValue(ClaimTypes.Email),
+                role = User.FindFirstValue(ClaimTypes.Role)
+            };
+            return Ok(me);
         }
     }
 }
