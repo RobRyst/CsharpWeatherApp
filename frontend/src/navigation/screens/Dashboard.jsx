@@ -46,10 +46,11 @@ export default function Dashboard() {
   }, [current, selected]);
 
   useEffect(() => {
+    if (!selected) return;
+
     let cancelled = false;
 
-    async function load() {
-      if (!selected) return;
+    (async () => {
       setLoading(true);
       try {
         await fetchCurrent({
@@ -80,16 +81,16 @@ export default function Dashboard() {
           setHourly(Array.isArray(h) ? h : []);
           setWeekly(Array.isArray(d) ? d : []);
         }
+      } catch (_e) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }
+    })();
 
-    load();
     return () => {
       cancelled = true;
     };
-  }, [selected, fetchCurrent, fetchHourly, fetchDaily]);
+  }, [selected]);
 
   return (
     <ScrollView

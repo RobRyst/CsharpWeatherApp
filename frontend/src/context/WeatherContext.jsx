@@ -1,109 +1,121 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
-import api, { setAuthToken } from "../api/client";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+import axios from "axios";
+import { useAuth } from "./AuthContext";
 
-function debounce(fn, delay = 400) {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), delay);
-  };
-}
-
-const WeatherCtx = createContext(null);
+const WeatherContext = createContext(null);
 
 export function WeatherProvider({ children }) {
-  const [token, setToken] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const { token } = useAuth();
   const [selected, setSelected] = useState(null);
   const [current, setCurrent] = useState(null);
+  const [hourly, setHourly] = useState([]);
+  const [daily, setDaily] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  function applyToken(jwt) {
-    setToken(jwt);
-    setAuthToken(jwt);
-  }
+  const API_BASE = "http://localhost:5092/api/openweather";
 
-  const doSearch = async (query) => {
-    if (!query?.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    if (!token) {
-      setError("Not authenticated — login first.");
-      return;
-    }
-    try {
-      setError(null);
-      const resp = await api.get(
-        `/api/openweather/geocode?query=${encodeURIComponent(query)}`
-      );
-      setSearchResults(resp.data || []);
-    } catch (e) {
-      setError(e?.response?.data?.error || e.message);
-    }
-  };
+  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const searchLocations = useMemo(() => debounce(doSearch, 350), [token]);
+  const fetchCurrent = useCallback(
+    async ({ lat, lon, units = "metric", lang = "en" }) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const resp = await axios.get(`${API_BASE}/current`, {
+          params: { lat, lon, units, lang },
+          headers: authHeader,
+        });
+        setCurrent(resp.data);
+        return resp.data;
+      } catch (err) {
+        console.error("fetchCurrent failed", err);
+        setError(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
-  const selectLocation = (loc) => {
-    if (!loc) return;
-    setSelected({
-      name: loc.name,
-      country: loc.country ?? "",
-      lat: loc.lat,
-      lon: loc.lon,
-    });
-  };
+  const fetchHourly = useCallback(
+    async ({ lat, lon, units = "metric", lang = "en" }) => {
+      try {
+        setError(null);
+        const resp = await axios.get(`${API_BASE}/hourly`, {
+          params: { lat, lon, units, lang },
+          headers: authHeader,
+        });
+        setHourly(resp.data || []);
+        return resp.data || [];
+      } catch (err) {
+        console.error("fetchHourly failed", err);
+        setError(err);
+        return [];
+      }
+    },
+    [token]
+  );
 
-  const fetchCurrent = async ({ lat, lon, units = "metric", lang = "en" }) => {
-    if (!token) {
-      setError("Not authenticated — login first.");
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      const resp = await api.get(
-        `/api/openweather/current?lat=${lat}&lon=${lon}&units=${units}&lang=${lang}`
-      );
-      setCurrent(resp.data);
-    } catch (e) {
-      setError(
-        e?.response?.data?.detail || e?.response?.data?.error || e.message
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchDaily = useCallback(
+    async ({ lat, lon, units = "metric", lang = "en" }) => {
+      try {
+        setError(null);
+        const resp = await axios.get(`${API_BASE}/daily`, {
+          params: { lat, lon, units, lang },
+          headers: authHeader,
+        });
+        setDaily(resp.data || []);
+        return resp.data || [];
+      } catch (err) {
+        console.error("fetchDaily failed", err);
+        setError(err);
+        return [];
+      }
+    },
+    [token]
+  );
 
-  const fetchHourly = async () => {
-    return [];
-  };
-  const fetchDaily = async () => {
-    return [];
-  };
+  const value = useMemo(
+    () => ({
+      selected,
+      setSelected,
+      current,
+      hourly,
+      daily,
+      loading,
+      error,
+      fetchCurrent,
+      fetchHourly,
+      fetchDaily,
+    }),
+    [
+      selected,
+      current,
+      hourly,
+      daily,
+      loading,
+      error,
+      fetchCurrent,
+      fetchHourly,
+      fetchDaily,
+    ]
+  );
 
-  const value = {
-    token,
-    applyToken,
-    searchResults,
-    searchLocations,
-    selectLocation,
-    selected,
-    current,
-    fetchCurrent,
-    fetchHourly,
-    fetchDaily,
-    loading,
-    error,
-  };
-
-  return <WeatherCtx.Provider value={value}>{children}</WeatherCtx.Provider>;
+  return (
+    <WeatherContext.Provider value={value}>{children}</WeatherContext.Provider>
+  );
 }
 
 export function useWeather() {
-  const ctx = useContext(WeatherCtx);
-  if (!ctx) throw new Error("useWeather must be used inside WeatherProvider");
+  const ctx = useContext(WeatherContext);
+  if (!ctx) throw new Error("useWeather must be used inside <WeatherProvider>");
   return ctx;
 }

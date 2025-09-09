@@ -1,26 +1,30 @@
-import "react-native-gesture-handler";
 import React from "react";
-import { useColorScheme } from "react-native";
 import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useColorScheme } from "react-native";
 
-import { WeatherProvider } from "./context/WeatherContext";
 import NavBar from "./components/NavBar";
+import { WeatherProvider } from "./context/WeatherContext";
+import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   const scheme = useColorScheme();
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={scheme === "dark" ? DarkTheme : DefaultTheme}>
+      <AuthProvider>
         <WeatherProvider>
-          <NavBar />
+          <NavigationContainer
+            theme={scheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <NavBar />
+          </NavigationContainer>
         </WeatherProvider>
-      </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

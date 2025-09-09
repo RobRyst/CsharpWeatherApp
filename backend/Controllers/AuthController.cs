@@ -42,16 +42,28 @@ namespace backend.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, role ?? "User")
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, role ?? "User")
+    };
 
             var jwt = tokenService.CreateToken(claims);
             logger.LogInformation("Issued token for {User}", user.Username);
 
-            return Ok(new AuthTokenResponse { AccessToken = jwt, TokenType = "Bearer", ExpiresIn = 60 * 60 });
+            return Ok(new AuthTokenResponse
+            {
+                Token = jwt,
+                TokenType = "Bearer",
+                ExpiresIn = 60 * 60,
+                User = new
+                {
+                    user.Id,
+                    user.Username,
+                    user.Email,
+                    Role = role ?? "User"
+                }
+            });
         }
 
         [Authorize]

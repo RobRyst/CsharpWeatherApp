@@ -1,65 +1,129 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import api from "../../api/client";
-import { useWeather } from "../../context/WeatherContext";
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
-  const { applyToken } = useWeather();
-  const [usernameOrEmail, setUser] = useState("");
-  const [password, setPass] = useState("");
+  const { applyToken } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const login = async () => {
+  const handleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
     try {
-      setError(null);
-      const resp = await api.post("/api/auth/login", {
-        usernameOrEmail,
+      const resp = await axios.post("http://localhost:5092/api/auth/login", {
+        usernameOrEmail: username,
         password,
       });
-      const token = resp.data?.accessToken || resp.data?.AccessToken;
-      if (!token) throw new Error("No token in response");
-      applyToken(token);
-    } catch (e) {
-      setError(e?.response?.data?.error || e.message);
+
+      const { token, user } = resp.data;
+
+      if (!token) {
+        throw new Error("No token returned from server");
+      }
+
+      applyToken(token, user);
+      setSuccess(true);
+    } catch (err) {
+      console.error("Login failed:", err);
+
+      if (err.response?.data) {
+        setError(
+          err.response.data.error ||
+            err.response.data.title ||
+            JSON.stringify(err.response.data)
+        );
+      } else {
+        setError(err.message || "Login failed");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.wrap}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Text style={styles.title}>Login</Text>
+
       <TextInput
+        value={username}
+        onChangeText={setUsername}
         placeholder="Username or Email"
-        placeholderTextColor="#999"
-        value={usernameOrEmail}
-        onChangeText={setUser}
         style={styles.input}
         autoCapitalize="none"
       />
+
       <TextInput
-        placeholder="Password"
-        placeholderTextColor="#999"
         value={password}
-        onChangeText={setPass}
-        style={styles.input}
+        onChangeText={setPassword}
+        placeholder="Password"
         secureTextEntry
+        style={styles.input}
       />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Login" onPress={login} />
-    </View>
+
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#fff"
+          style={{ marginBottom: 16 }}
+        />
+      ) : (
+        <Button title="Login" onPress={handleLogin} />
+      )}
+
+      {error && <Text style={styles.error}>❌ {error}</Text>}
+      {success && <Text style={styles.success}>✅ Login successful!</Text>}
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "#000", padding: 16, gap: 12 },
-  title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 8 },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.07)",
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    padding: 20,
+  },
+  title: {
     color: "white",
-    borderRadius: 10,
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: "white",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderRadius: 8,
+    marginBottom: 12,
   },
-  error: { color: "#ff6b6b" },
+  error: {
+    color: "red",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  success: {
+    color: "lime",
+    marginTop: 12,
+    textAlign: "center",
+  },
 });
