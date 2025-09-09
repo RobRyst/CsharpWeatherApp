@@ -10,11 +10,13 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ✅ Load OpenWeather API key
 var apiKey = builder.Configuration["OpenWeather:ApiKey"]
           ?? builder.Configuration["OPENWEATHER_API_KEY"];
 if (string.IsNullOrWhiteSpace(apiKey))
     throw new Exception("API KEY NOT WORKING: set OpenWeather:ApiKey or OPENWEATHER_API_KEY");
 
+// ✅ Configure JWT
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? throw new Exception("Jwt:Key not configured");
@@ -43,12 +45,15 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+// ✅ Add HttpClient + cache
 builder.Services.AddHttpClient("openweather", c =>
 {
     c.BaseAddress = new Uri("https://api.openweathermap.org/");
 });
 builder.Services.AddMemoryCache();
 
+// ✅ EF Core MySQL
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     var cs = builder.Configuration.GetConnectionString("Default")
@@ -56,12 +61,14 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseMySql(cs, ServerVersion.AutoDetect(cs));
 });
 
+// ✅ Dependency injection
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// ✅ Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     var scheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -91,8 +98,27 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// ✅ CORS (allow Expo Web + LAN access)
+var allowedOrigins = new[]
+{
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "http://192.168.10.116:8081" // your LAN IP for physical device testing
+};
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
+// ✅ Development setup
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -101,9 +127,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ Apply CORS before auth
+app.UseCors("DevCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ✅ Minimal API endpoints
 app.MapGet("/api/openweather/geocode", async (string query, IHttpClientFactory http, IMemoryCache cache) =>
 {
     if (string.IsNullOrWhiteSpace(query))

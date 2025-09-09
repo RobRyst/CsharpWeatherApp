@@ -2,26 +2,26 @@ import React from "react";
 import { View, Text, Image, StyleSheet, FlatList } from "react-native";
 
 /**
- * DailyForecast
- * @param {{
- *  items: Array<{
- *    Date: string | Date,
- *    MinTemperature: number,
- *    MaxTemperature: number,
- *    Icon?: string,
- *    Description?: string,
- *    PrecipitationProbability?: number
- *  }>
- * }} props
+ * WeeklyForecast
+ * @param {Object} props
+ * @param {Array<{
+ *   Date: string | Date,
+ *   MinTemperature: number,
+ *   MaxTemperature: number,
+ *   Icon?: string,
+ *   Description?: string,
+ *   PrecipitationProbability?: number
+ * }>} props.items
  */
-export default function DailyForecast({ items = [] }) {
+export default function WeeklyForecast({ items = [] }) {
   const data = Array.isArray(items) ? items : [];
 
   const renderItem = ({ item }) => {
     const dt = new Date(item.Date);
     const dayLabel = dt.toLocaleDateString(undefined, { weekday: "short" });
-    const icon = item.Icon || "01d";
-    const iconUrl = `https://openweathermap.org/img/wn/${icon}.png`;
+    const iconUrl = `https://openweathermap.org/img/wn/${
+      item.Icon || "01d"
+    }.png`;
     const pop =
       typeof item.PrecipitationProbability === "number"
         ? Math.round(item.PrecipitationProbability * 100)
@@ -49,7 +49,7 @@ export default function DailyForecast({ items = [] }) {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>7-Day Forecast</Text>
+      <Text style={styles.title}>Weekly Forecast</Text>
       <FlatList
         data={data}
         keyExtractor={(it, idx) => String(it.Date ?? idx)}

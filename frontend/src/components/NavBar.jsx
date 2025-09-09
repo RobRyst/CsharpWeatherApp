@@ -1,21 +1,14 @@
-// Navigation.jsx
 import React from "react";
-import { Image } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import HomeScreen from "../screens/Home";
-import SearchScreen from "../screens/Search";
-import ForecastScreen from "../screens/Forecast";
-import ProfileScreen from "../screens/Profile";
-
-import homeIcon from "../assets/home.png";
-import searchIcon from "../assets/search.png";
-import forecastIcon from "../assets/forecast.png";
-import profileIcon from "../assets/profile.png";
+import Dashboard from "../navigation/screens/Dashboard";
+import Search from "../navigation/screens/Search";
+import Profile from "../navigation/screens/Profile";
+import Login from "../navigation/screens/Login";
 
 const Tab = createBottomTabNavigator();
 
-const NavBar = () => {
+export default function NavBar() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -30,56 +23,10 @@ const NavBar = () => {
         tabBarInactiveTintColor: "gray",
       }}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Image
-              source={homeIcon}
-              style={{ tintColor: color, width: size, height: size }}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Search"
-        component={SearchScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Image
-              source={searchIcon}
-              style={{ tintColor: color, width: size, height: size }}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Forecast"
-        component={ForecastScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Image
-              source={forecastIcon}
-              style={{ tintColor: color, width: size, height: size }}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Image
-              source={profileIcon}
-              style={{ tintColor: color, width: size, height: size }}
-            />
-          ),
-        }}
-      />
+      <Tab.Screen name="Dashboard" component={Dashboard} />
+      <Tab.Screen name="Search" component={Search} />
+      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="Login" component={Login} />
     </Tab.Navigator>
   );
-};
-
-export default NavBar;
+}
