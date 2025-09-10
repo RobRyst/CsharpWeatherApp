@@ -12,14 +12,19 @@ const WeatherContext = createContext(null);
 
 export function WeatherProvider({ children }) {
   const { token } = useAuth();
+
   const [selected, setSelected] = useState(null);
+
   const [current, setCurrent] = useState(null);
   const [hourly, setHourly] = useState([]);
   const [daily, setDaily] = useState([]);
+
+  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_BASE = "http://localhost:5092/api/openweather";
+  const OPENWEATHER_BASE = "http://localhost:5092/api/openweather";
+  const WEATHER_BASE = "http://localhost:5092/api/weather";
 
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -28,7 +33,7 @@ export function WeatherProvider({ children }) {
       try {
         setLoading(true);
         setError(null);
-        const resp = await axios.get(`${API_BASE}/current`, {
+        const resp = await axios.get(`${OPENWEATHER_BASE}/current`, {
           params: { lat, lon, units, lang },
           headers: authHeader,
         });
@@ -46,15 +51,16 @@ export function WeatherProvider({ children }) {
   );
 
   const fetchHourly = useCallback(
-    async ({ lat, lon, units = "metric", lang = "en" }) => {
+    async ({ lat, lon, hours = 24, units = "metric", lang = "en" }) => {
       try {
         setError(null);
-        const resp = await axios.get(`${API_BASE}/hourly`, {
-          params: { lat, lon, units, lang },
+        const resp = await axios.get(`${WEATHER_BASE}/hourly`, {
+          params: { lat, lon, hours, units, lang },
           headers: authHeader,
         });
-        setHourly(resp.data || []);
-        return resp.data || [];
+        const data = resp.data || [];
+        setHourly(data);
+        return data;
       } catch (err) {
         console.error("fetchHourly failed", err);
         setError(err);
@@ -65,15 +71,16 @@ export function WeatherProvider({ children }) {
   );
 
   const fetchDaily = useCallback(
-    async ({ lat, lon, units = "metric", lang = "en" }) => {
+    async ({ lat, lon, days = 7, units = "metric", lang = "en" }) => {
       try {
         setError(null);
-        const resp = await axios.get(`${API_BASE}/daily`, {
-          params: { lat, lon, units, lang },
+        const resp = await axios.get(`${WEATHER_BASE}/weekly`, {
+          params: { lat, lon, days, units, lang },
           headers: authHeader,
         });
-        setDaily(resp.data || []);
-        return resp.data || [];
+        const data = resp.data || [];
+        setDaily(data);
+        return data;
       } catch (err) {
         console.error("fetchDaily failed", err);
         setError(err);
@@ -83,29 +90,69 @@ export function WeatherProvider({ children }) {
     [token]
   );
 
+  const searchLocations = useCallback(
+    async (query) => {
+      if (!query?.trim()) {
+        setSearchResults([]);
+        return [];
+      }
+      try {
+        setError(null);
+        const resp = await axios.get(`${OPENWEATHER_BASE}/geocode`, {
+          params: { query },
+          headers: authHeader,
+        });
+        const data = Array.isArray(resp.data) ? resp.data : [];
+        setSearchResults(data);
+        return data;
+      } catch (err) {
+        console.error("searchLocations failed", err);
+        setError(err);
+        setSearchResults([]);
+        return [];
+      }
+    },
+    [token]
+  );
+
+  const selectLocation = useCallback((loc) => setSelected(loc), []);
+
   const value = useMemo(
     () => ({
+      token,
+
       selected,
       setSelected,
+      selectLocation,
+
       current,
       hourly,
       daily,
+
+      searchResults,
+      searchLocations,
+
       loading,
       error,
+
       fetchCurrent,
       fetchHourly,
       fetchDaily,
     }),
     [
+      token,
       selected,
       current,
       hourly,
       daily,
+      searchResults,
       loading,
       error,
       fetchCurrent,
       fetchHourly,
       fetchDaily,
+      searchLocations,
+      selectLocation,
     ]
   );
 

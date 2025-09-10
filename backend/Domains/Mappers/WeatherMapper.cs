@@ -2,7 +2,7 @@ using backend.Domains.Entities;
 using backend.Domains.Models;
 using backend.Dtos;
 
-namespace backend.Domains.Mapping
+namespace backend.Domains.Mappers
 {
     public static class WeatherMapper
     {

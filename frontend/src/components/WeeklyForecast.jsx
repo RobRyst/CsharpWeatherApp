@@ -1,30 +1,28 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, FlatList } from "react-native";
 
-/**
- * WeeklyForecast
- * @param {Object} props
- * @param {Array<{
- *   Date: string | Date,
- *   MinTemperature: number,
- *   MaxTemperature: number,
- *   Icon?: string,
- *   Description?: string,
- *   PrecipitationProbability?: number
- * }>} props.items
- */
 export default function WeeklyForecast({ items = [] }) {
   const data = Array.isArray(items) ? items : [];
 
   const renderItem = ({ item }) => {
-    const dt = new Date(item.Date);
-    const dayLabel = dt.toLocaleDateString(undefined, { weekday: "short" });
-    const iconUrl = `https://openweathermap.org/img/wn/${
-      item.Icon || "01d"
-    }.png`;
+    const date = item.date ?? item.Date;
+    const minT = item.minTemperature ?? item.MinTemperature ?? 0;
+    const maxT = item.maxTemperature ?? item.MaxTemperature ?? 0;
+    const icon = item.icon ?? item.Icon ?? "01d";
+    const desc = item.description ?? item.Description ?? "";
+    const popVal =
+      item.precipitationProbability ?? item.PrecipitationProbability;
+
+    const dt = date ? new Date(date) : null;
+    const isValidDate = dt && !isNaN(dt.getTime());
+    const dayLabel = isValidDate
+      ? dt.toLocaleDateString(undefined, { weekday: "short" })
+      : "--";
+
+    const iconUrl = `https://openweathermap.org/img/wn/${icon}.png`;
     const pop =
-      typeof item.PrecipitationProbability === "number"
-        ? Math.round(item.PrecipitationProbability * 100)
+      typeof popVal === "number"
+        ? Math.round(Math.max(0, Math.min(1, popVal)) * 100)
         : null;
 
     return (
@@ -33,14 +31,13 @@ export default function WeeklyForecast({ items = [] }) {
         <View style={styles.mid}>
           <Image source={{ uri: iconUrl }} style={styles.icon} />
           <Text style={styles.desc} numberOfLines={1}>
-            {item.Description || ""}
+            {desc}
           </Text>
         </View>
         <View style={styles.right}>
           {pop !== null && <Text style={styles.pop}>{pop}%</Text>}
           <Text style={styles.temps}>
-            {Math.round(item.MinTemperature)}° /{" "}
-            {Math.round(item.MaxTemperature)}°
+            {Math.round(minT)}° / {Math.round(maxT)}°
           </Text>
         </View>
       </View>
@@ -52,7 +49,7 @@ export default function WeeklyForecast({ items = [] }) {
       <Text style={styles.title}>Weekly Forecast</Text>
       <FlatList
         data={data}
-        keyExtractor={(it, idx) => String(it.Date ?? idx)}
+        keyExtractor={(it, idx) => String(it?.date ?? it?.Date ?? idx)}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.sep} />}
         contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 4 }}

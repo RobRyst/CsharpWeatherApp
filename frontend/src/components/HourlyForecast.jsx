@@ -1,42 +1,39 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, FlatList } from "react-native";
 
-/**
- * HourlyForecast
- * @param {Object} props
- * @param {Array<{
- *   Time: string | Date,
- *   Temperature: number,
- *   FeelsLike?: number,
- *   Icon?: string,
- *   Description?: string
- * }>} props.items
- */
 export default function HourlyForecast({ items = [] }) {
   const data = Array.isArray(items) ? items : [];
 
   const renderItem = ({ item }) => {
-    const dt = new Date(item.Time);
-    const hourLabel = dt.toLocaleTimeString(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    const iconUrl = `https://openweathermap.org/img/wn/${
-      item.Icon || "01d"
-    }.png`;
+    const time = item.time ?? item.Time;
+    const temp = item.temperature ?? item.Temperature ?? 0;
+    const feels = item.feelsLike ?? item.FeelsLike;
+    const icon = item.icon ?? item.Icon ?? "01d";
+    const desc = item.description ?? item.Description ?? "";
+
+    const dt = time ? new Date(time) : null;
+    const hourLabel =
+      dt && !isNaN(dt.getTime())
+        ? dt.toLocaleTimeString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
+        : "--:--";
+
+    const iconUrl = `https://openweathermap.org/img/wn/${icon}.png`;
 
     return (
       <View style={styles.cell}>
         <Text style={styles.hour}>{hourLabel}</Text>
         <Image source={{ uri: iconUrl }} style={styles.icon} />
-        <Text style={styles.temp}>{Math.round(item.Temperature)}°</Text>
-        {typeof item.FeelsLike === "number" && (
-          <Text style={styles.feels}>Feels {Math.round(item.FeelsLike)}°</Text>
+        <Text style={styles.temp}>{Math.round(Number(temp))}°</Text>
+        {typeof feels === "number" && (
+          <Text style={styles.feels}>Feels {Math.round(feels)}°</Text>
         )}
-        {!!item.Description && (
+        {!!desc && (
           <Text style={styles.desc} numberOfLines={1}>
-            {item.Description}
+            {desc}
           </Text>
         )}
       </View>
@@ -50,7 +47,7 @@ export default function HourlyForecast({ items = [] }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         data={data}
-        keyExtractor={(it, idx) => String(it.Time ?? idx)}
+        keyExtractor={(it, idx) => String(it?.time ?? it?.Time ?? idx)}
         renderItem={renderItem}
         contentContainerStyle={{ gap: 12, paddingHorizontal: 8 }}
       />

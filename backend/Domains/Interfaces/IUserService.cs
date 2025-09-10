@@ -1,4 +1,3 @@
-// backend/Domains/Interfaces/IUserService.cs
 using backend.Dtos;
 
 namespace backend.Domains.Interfaces
