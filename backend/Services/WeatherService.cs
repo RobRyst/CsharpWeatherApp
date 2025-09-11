@@ -41,13 +41,13 @@ namespace backend.Services
                 resp.EnsureSuccessStatusCode();
             }
 
-            var f = JsonSerializer.Deserialize<ForecastResponse>(body);
-            if (f?.List is null || f.List.Count == 0)
+            var forecast = JsonSerializer.Deserialize<ForecastResponse>(body);
+            if (forecast?.List is null || forecast.List.Count == 0)
                 return Enumerable.Empty<HourlyForecastItemDto>();
 
             var steps = Math.Max(1, (int)Math.Ceiling(hours / 3.0));
 
-            return f.List
+            return forecast.List
                 .OrderBy(x => x.Dt)
                 .Take(steps)
                 .Select(x => new HourlyForecastItemDto
@@ -57,7 +57,7 @@ namespace backend.Services
                     FeelsLike = x.Main?.Feels_like ?? x.Main?.Temp ?? 0,
                     Humidity = x.Main?.Humidity ?? 0,
                     WindSpeed = x.Wind?.Speed ?? 0,
-                    PrecipitationProbability = x.Pop, // 0..1
+                    PrecipitationProbability = x.Pop,
                     Description = x.Weather?.FirstOrDefault()?.Description ?? string.Empty,
                     Icon = x.Weather?.FirstOrDefault()?.Icon ?? string.Empty
                 })
@@ -76,11 +76,11 @@ namespace backend.Services
                 resp.EnsureSuccessStatusCode();
             }
 
-            var f = JsonSerializer.Deserialize<ForecastResponse>(body);
-            if (f?.List is null || f.List.Count == 0)
+            var forecast = JsonSerializer.Deserialize<ForecastResponse>(body);
+            if (forecast?.List is null || forecast.List.Count == 0)
                 return Enumerable.Empty<DailyForecastItemDto>();
 
-            var grouped = f.List.GroupBy(x => FromUnix(x.Dt).UtcDateTime.Date);
+            var grouped = forecast.List.GroupBy(x => FromUnix(x.Dt).UtcDateTime.Date);
 
             var daily = grouped.Select(g =>
             {

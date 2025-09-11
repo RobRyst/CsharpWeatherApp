@@ -14,11 +14,11 @@ namespace backend.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
+                .HasIndex(user => user.Username)
                 .IsUnique();
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
+                .HasIndex(user => user.Email)
                 .IsUnique();
         }
     }
