@@ -1,4 +1,3 @@
-// frontend/src/navigation/screens/Register.jsx
 import React, { useState } from "react";
 import {
   View,

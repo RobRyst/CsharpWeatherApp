@@ -28,7 +28,7 @@ export default function NavBar() {
       <Tab.Screen name="Search" component={Search} />
       <Tab.Screen name="Profile" component={Profile} />
       <Tab.Screen name="Login" component={Login} />
-      <Tab.Screen name="Register" component={Register} /> {/* ⬅️ new tab */}
+      <Tab.Screen name="Register" component={Register} />
     </Tab.Navigator>
   );
 }
