@@ -1,3 +1,4 @@
+// frontend/src/context/WeatherContext.jsx
 import React, {
   createContext,
   useContext,
@@ -20,11 +21,15 @@ export function WeatherProvider({ children }) {
   const [daily, setDaily] = useState([]);
 
   const [searchResults, setSearchResults] = useState([]);
+
+  const [favorites, setFavorites] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const OPENWEATHER_BASE = "http://localhost:5092/api/openweather";
   const WEATHER_BASE = "http://localhost:5092/api/weather";
+  const FAVORITES_BASE = "http://localhost:5092/api/favorites";
 
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -117,6 +122,75 @@ export function WeatherProvider({ children }) {
 
   const selectLocation = useCallback((loc) => setSelected(loc), []);
 
+  const loadFavorites = useCallback(async () => {
+    if (!token) {
+      setFavorites([]);
+      return [];
+    }
+    try {
+      const resp = await axios.get(FAVORITES_BASE, { headers: authHeader });
+      const data = Array.isArray(resp.data) ? resp.data : [];
+      setFavorites(data);
+      return data;
+    } catch (err) {
+      console.error("loadFavorites failed", err);
+      return [];
+    }
+  }, [token]);
+
+  const addFavorite = useCallback(
+    async (loc) => {
+      if (!token || !loc) return null;
+      try {
+        const body = {
+          name: loc.name,
+          countryCode: loc.country,
+          state: loc.state ?? null,
+          latitude: loc.lat,
+          longitude: loc.lon,
+        };
+        const resp = await axios.post(FAVORITES_BASE, body, {
+          headers: authHeader,
+        });
+        await loadFavorites();
+        return resp.data;
+      } catch (err) {
+        console.error("addFavorite failed", err);
+        throw err;
+      }
+    },
+    [token, loadFavorites]
+  );
+
+  const removeFavorite = useCallback(
+    async (favoriteId) => {
+      if (!token) return false;
+      try {
+        await axios.delete(`${FAVORITES_BASE}/${favoriteId}`, {
+          headers: authHeader,
+        });
+        await loadFavorites();
+        return true;
+      } catch (err) {
+        console.error("removeFavorite failed", err);
+        return false;
+      }
+    },
+    [token, loadFavorites]
+  );
+
+  const isSelectedFavorite = useMemo(() => {
+    if (!selected || favorites.length === 0) return null;
+    const key = (n) => Number.parseFloat(n).toFixed(4);
+    return (
+      favorites.find(
+        (f) =>
+          key(f.latitude) === key(selected.lat) &&
+          key(f.longitude) === key(selected.lon)
+      ) || null
+    );
+  }, [favorites, selected]);
+
   const value = useMemo(
     () => ({
       token,
@@ -132,6 +206,12 @@ export function WeatherProvider({ children }) {
       searchResults,
       searchLocations,
 
+      favorites,
+      loadFavorites,
+      addFavorite,
+      removeFavorite,
+      isSelectedFavorite,
+
       loading,
       error,
 
@@ -146,6 +226,8 @@ export function WeatherProvider({ children }) {
       hourly,
       daily,
       searchResults,
+      favorites,
+      isSelectedFavorite,
       loading,
       error,
       fetchCurrent,
@@ -153,6 +235,9 @@ export function WeatherProvider({ children }) {
       fetchDaily,
       searchLocations,
       selectLocation,
+      loadFavorites,
+      addFavorite,
+      removeFavorite,
     ]
   );
 
