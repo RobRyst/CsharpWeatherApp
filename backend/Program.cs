@@ -58,6 +58,7 @@ builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFavoriteLocationService, FavoriteLocationService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -101,6 +102,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("DevCors", policy =>
     {
         policy.WithOrigins(allowedOrigins)
+                .AllowAnyOrigin() 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -142,7 +144,6 @@ app.MapGet("/api/openweather/geocode", async (string query, IHttpClientFactory h
     }
     return Results.Content(result!, "application/json");
 })
-.RequireAuthorization()
 .WithName("OpenWeatherGeocode")
 .WithTags("OpenWeather");
 
@@ -169,7 +170,6 @@ app.MapGet("/api/openweather/current", async (double lat, double lon, string? un
     }
     return Results.Content(result!, "application/json");
 })
-.RequireAuthorization()
 .WithName("OpenWeatherCurrent")
 .WithTags("OpenWeather");
 

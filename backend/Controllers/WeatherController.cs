@@ -6,7 +6,8 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [AllowAnonymous]
+
     public class WeatherController : ControllerBase
     {
         private readonly ILogger<WeatherController> _logger;

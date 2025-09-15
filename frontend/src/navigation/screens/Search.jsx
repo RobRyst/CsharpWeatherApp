@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,18 +13,30 @@ import { useNavigation } from "@react-navigation/native";
 export default function Search() {
   const nav = useNavigation();
   const {
-    token,
     searchResults,
     searchLocations,
     selectLocation,
     fetchCurrent,
     error,
   } = useWeather();
+
   const [query, setQuery] = useState("");
+  const debounceRef = useRef(null);
+
+  const triggerSearch = (text) => {
+    if (!text?.trim()) {
+      searchLocations("");
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      searchLocations(text);
+    }, 300);
+  };
 
   const onChange = (t) => {
     setQuery(t);
-    if (token) searchLocations(t);
+    triggerSearch(t);
   };
 
   const onSelect = async (loc) => {
@@ -33,35 +45,43 @@ export default function Search() {
     nav.navigate("Dashboard");
   };
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>Search location</Text>
-      {!token && (
-        <Text style={styles.hint}>
-          You’re not logged in. Open the Login tab first.
-        </Text>
-      )}
+
       <TextInput
         style={styles.input}
         value={query}
         onChangeText={onChange}
         placeholder="City or place"
         placeholderTextColor="#999"
+        autoCorrect={false}
+        autoCapitalize="none"
       />
 
-      {error ? <Text style={styles.error}>{String(error)}</Text> : null}
+      {error ? (
+        <Text style={styles.error}>{String(error?.message ?? error)}</Text>
+      ) : null}
 
       <FlatList
+        keyboardShouldPersistTaps="handled"
         data={searchResults}
         keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.row} onPress={() => onSelect(item)}>
             <Text style={styles.name}>
-              {item.name} {item.state ? `(${item.state})` : ""}{" "}
-              {item.country ? `• ${item.country}` : ""}
+              {item.name}
+              {item.state ? ` (${item.state})` : ""}
+              {item.country ? ` • ${item.country}` : ""}
             </Text>
             <Text style={styles.coords}>
-              {item.lat.toFixed(3)}, {item.lon.toFixed(3)}
+              {Number(item.lat).toFixed(3)}, {Number(item.lon).toFixed(3)}
             </Text>
           </TouchableOpacity>
         )}
@@ -75,7 +95,6 @@ export default function Search() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: "#000", padding: 16 },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
-  hint: { color: "#ccc", marginBottom: 8 },
   error: { color: "#ff6b6b", marginTop: 8 },
   input: {
     backgroundColor: "rgba(255,255,255,0.07)",

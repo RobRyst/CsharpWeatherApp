@@ -50,5 +50,15 @@ namespace backend.Controllers
             var ok = await favorites.DeleteAsync(id.Value, favoriteId, ct);
             return ok ? NoContent() : NotFound();
         }
+        
+        [HttpPatch("{favoriteId:int}/default")]
+        public async Task<IActionResult> SetDefault(int favoriteId, CancellationToken ct)
+        {
+            var id = CurrentUserId;
+            if (id is null) return Unauthorized();
+
+            var ok = await favorites.SetDefaultAsync(id.Value, favoriteId, ct);
+            return ok ? NoContent() : NotFound();
+        }
     }
 }

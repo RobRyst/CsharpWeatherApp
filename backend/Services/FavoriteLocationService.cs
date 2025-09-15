@@ -70,5 +70,17 @@ namespace backend.Services
             await _db.SaveChangesAsync(ct);
             return true;
         }
+        public async Task<bool> SetDefaultAsync(int userId, int favoriteId, CancellationToken ct)
+        {
+            var favorite = await _db.Favorites.FirstOrDefaultAsync(favorite => favorite.Id == favoriteId && favorite.UserId == userId, ct);
+            if (favorite == null) return false;
+
+            await _db.Favorites.Where(favorite => favorite.UserId == userId && favorite.IsDefault).ExecuteUpdateAsync(
+                s => s.SetProperty(favorite => favorite.IsDefault, false), ct);
+
+            favorite.IsDefault = true;
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
     }
 }
