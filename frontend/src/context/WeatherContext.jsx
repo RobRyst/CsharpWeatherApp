@@ -1,10 +1,10 @@
-// frontend/src/context/WeatherContext.jsx
 import React, {
   createContext,
   useContext,
   useState,
   useCallback,
   useMemo,
+  useEffect,
 } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
@@ -155,6 +155,10 @@ export function WeatherProvider({ children }) {
         await loadFavorites();
         return resp.data;
       } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 409) {
+          await loadFavorites();
+          return null;
+        }
         console.error("addFavorite failed", err);
         throw err;
       }
@@ -178,6 +182,42 @@ export function WeatherProvider({ children }) {
     },
     [token, loadFavorites]
   );
+
+  const findFavoriteFor = useCallback(
+    (loc) => {
+      if (!loc || favorites.length === 0) return null;
+      const key = (n) => Number.parseFloat(n).toFixed(4);
+      return (
+        favorites.find(
+          (f) =>
+            key(f.latitude) === key(loc.lat) &&
+            key(f.longitude) === key(loc.lon)
+        ) || null
+      );
+    },
+    [favorites]
+  );
+
+  const toggleFavorite = useCallback(
+    async (loc) => {
+      if (!token) return { ok: false, reason: "auth" };
+      const existing = findFavoriteFor(loc);
+      if (existing) {
+        await removeFavorite(existing.id);
+        return { ok: true, removed: true, id: existing.id };
+      } else {
+        const created = await addFavorite(loc);
+        return { ok: true, created };
+      }
+    },
+    [token, findFavoriteFor, removeFavorite, addFavorite]
+  );
+
+  useEffect(() => {
+    (async () => {
+      await loadFavorites();
+    })();
+  }, [token, loadFavorites]);
 
   const isSelectedFavorite = useMemo(() => {
     if (!selected || favorites.length === 0) return null;
@@ -210,6 +250,8 @@ export function WeatherProvider({ children }) {
       loadFavorites,
       addFavorite,
       removeFavorite,
+      findFavoriteFor,
+      toggleFavorite,
       isSelectedFavorite,
 
       loading,
@@ -227,6 +269,8 @@ export function WeatherProvider({ children }) {
       daily,
       searchResults,
       favorites,
+      findFavoriteFor,
+      toggleFavorite,
       isSelectedFavorite,
       loading,
       error,

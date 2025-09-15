@@ -2,72 +2,106 @@ import React, { useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
+  StyleSheet,
+  Alert,
 } from "react-native";
 import { useWeather } from "../../context/WeatherContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Favorites() {
   const nav = useNavigation();
-  const { token, favorites, loadFavorites, selectLocation } = useWeather();
+  const {
+    token,
+    favorites,
+    loadFavorites,
+    removeFavorite,
+    selectLocation,
+    fetchCurrent,
+  } = useWeather();
 
   useEffect(() => {
-    if (token) loadFavorites();
+    loadFavorites();
   }, [token]);
 
-  const onSelect = (f) => {
-    selectLocation({
-      name: f.name,
-      country: f.countryCode,
-      state: f.state ?? undefined,
-      lat: f.latitude,
-      lon: f.longitude,
-    });
+  const goTo = async (fav) => {
+    const loc = {
+      name: fav.name,
+      country: fav.countryCode,
+      state: fav.state ?? null,
+      lat: fav.latitude,
+      lon: fav.longitude,
+    };
+    selectLocation(loc);
+    await fetchCurrent({ lat: loc.lat, lon: loc.lon });
     nav.navigate("Dashboard");
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Favorites</Text>
+  const onRemove = (fav) => {
+    Alert.alert(
+      "Remove favorite",
+      `Remove ${fav.name}${fav.countryCode ? `, ${fav.countryCode}` : ""}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            await removeFavorite(fav.id);
+          },
+        },
+      ]
+    );
+  };
 
-      {!token ? (
-        <Text style={styles.hint}>
-          Log in to save and view favorite locations.
-        </Text>
-      ) : favorites.length === 0 ? (
-        <Text style={styles.hint}>
-          No favorites yet. Star a location from the Dashboard.
-        </Text>
-      ) : (
-        <FlatList
-          data={favorites}
-          keyExtractor={(it) => String(it.id)}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          contentContainerStyle={{ paddingVertical: 8 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.row} onPress={() => onSelect(item)}>
-              <Text style={styles.name} numberOfLines={1}>
-                {item.name} {item.state ? `(${item.state})` : ""} •{" "}
-                {item.countryCode}
+  if (!token) {
+    return (
+      <View style={styles.wrap}>
+        <Text style={styles.title}>Favorites</Text>
+        <Text style={styles.hint}>Log in to save locations as favorites.</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.wrap}>
+      <Text style={styles.title}>Favorites</Text>
+      <FlatList
+        data={favorites}
+        keyExtractor={(f) => String(f.id)}
+        renderItem={({ item }) => (
+          <View style={styles.row}>
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => goTo(item)}>
+              <Text style={styles.name}>
+                {item.name}
+                {item.state ? ` (${item.state})` : ""} • {item.countryCode}
               </Text>
               <Text style={styles.coords}>
-                {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
+                {Number(item.latitude).toFixed(3)},{" "}
+                {Number(item.longitude).toFixed(3)}
               </Text>
             </TouchableOpacity>
-          )}
-        />
-      )}
+            <TouchableOpacity onPress={() => onRemove(item)}>
+              <Text style={styles.remove}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        contentContainerStyle={{ paddingTop: 8 }}
+        ListEmptyComponent={<Text style={styles.hint}>No favorites yet.</Text>}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000", padding: 16 },
+  wrap: { flex: 1, backgroundColor: "#000", padding: 16 },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
   hint: { color: "#ccc" },
   row: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: 12,
     padding: 12,
@@ -76,4 +110,5 @@ const styles = StyleSheet.create({
   },
   name: { color: "white", fontSize: 16, fontWeight: "600" },
   coords: { color: "#aaa", fontSize: 12, marginTop: 4 },
+  remove: { color: "#ff6b6b", fontWeight: "600" },
 });
