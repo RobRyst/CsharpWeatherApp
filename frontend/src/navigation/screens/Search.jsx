@@ -120,7 +120,7 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "#000", padding: 16 },
+  wrap: { flex: 1, backgroundColor: "transparent", padding: 16 },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
   error: { color: "#ff6b6b", marginTop: 8 },
   input: {

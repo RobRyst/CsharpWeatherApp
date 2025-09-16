@@ -49,7 +49,6 @@ export default function Dashboard() {
     if (!selected) return;
 
     let cancelled = false;
-
     (async () => {
       setLoading(true);
       try {
@@ -81,7 +80,6 @@ export default function Dashboard() {
           setHourly(Array.isArray(h) ? h : []);
           setWeekly(Array.isArray(d) ? d : []);
         }
-      } catch (_e) {
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -157,7 +155,7 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#000" },
+  container: { flex: 1, padding: 16, backgroundColor: "rgba(0,0,0,0.01)" },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 16 },
   hint: { color: "#ccc" },
   error: { color: "#ff6b6b" },

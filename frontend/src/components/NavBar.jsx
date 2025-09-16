@@ -15,6 +15,7 @@ export default function NavBar() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        sceneContainerStyle: { backgroundColor: "rgba(0,0,0,0.01)" },
         tabBarStyle: {
           backgroundColor: "rgba(0,0,0,0.6)",
           borderTopWidth: 0.5,
@@ -26,7 +27,11 @@ export default function NavBar() {
       }}
     >
       <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="Search" component={Search} />
+      <Tab.Screen
+        name="Search"
+        component={Search}
+        options={{ unmountOnBlur: true }}
+      />
       <Tab.Screen name="Favorites" component={Favorites} />
       <Tab.Screen name="Profile" component={Profile} />
       <Tab.Screen name="Login" component={Login} />

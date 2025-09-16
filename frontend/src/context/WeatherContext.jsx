@@ -221,7 +221,7 @@ export function WeatherProvider({ children }) {
 
   const isSelectedFavorite = useMemo(() => {
     if (!selected || favorites.length === 0) return null;
-    const key = (n) => Number.parseFloat(n).toFixed(4);
+    const key = (number) => Number.parseFloat(number).toFixed(4);
     return (
       favorites.find(
         (f) =>
