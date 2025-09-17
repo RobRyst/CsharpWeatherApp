@@ -1,4 +1,5 @@
 import React from "react";
+import { View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import Dashboard from "../navigation/screens/Dashboard";
@@ -13,37 +14,54 @@ export default function NavBar() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        sceneContainerStyle: { backgroundColor: "#000" },
-        tabBarStyle: {
-          backgroundColor: "rgba(0,0,0,0.6)",
-          borderTopWidth: 0.5,
-          borderTopColor: "rgba(255,255,255,0.2)",
-          position: "absolute",
+        tabBarIcon: () => null,
+        tabBarIconStyle: { display: "none", width: 0, height: 0 },
+
+        tabBarItemStyle: {
+          justifyContent: "center",
+          paddingVertical: 8,
         },
+        tabBarLabelStyle: {
+          fontSize: 13,
+          lineHeight: 16,
+          marginBottom: 0,
+        },
+
+        tabBarStyle: {
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 60,
+          overflow: "visible",
+        },
+
+        tabBarBackground: () => (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.6)",
+            }}
+          />
+        ),
+
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "gray",
+        tabBarHideOnKeyboard: true,
       }}
     >
-      <Tab.Screen
-        name="Dashboard"
-        component={Dashboard}
-        options={{ headerShown: false }}
-      />
+      <Tab.Screen name="Dashboard" component={Dashboard} />
       <Tab.Screen
         name="Search"
         component={Search}
-        options={{ unmountOnBlur: true, headerShown: false }}
+        options={{ unmountOnBlur: true }}
       />
-      <Tab.Screen
-        name="Favorites"
-        component={Favorites}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={Profile}
-        options={{ headerShown: false }}
-      />
+      <Tab.Screen name="Favorites" component={Favorites} />
+      <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
 }

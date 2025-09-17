@@ -47,7 +47,9 @@ export default function HourlyForecast({ items = [] }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         data={data}
-        keyExtractor={(it, idx) => String(it?.time ?? it?.Time ?? idx)}
+        keyExtractor={(item, index) =>
+          String(item?.time ?? item?.Time ?? index)
+        }
         renderItem={renderItem}
         contentContainerStyle={{ gap: 12, paddingHorizontal: 8 }}
       />

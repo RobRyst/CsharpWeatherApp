@@ -94,7 +94,7 @@ export default function Register() {
         value={username}
         onChangeText={setUsername}
         placeholder="Username"
-        placeholderTextColor="#999"
+        placeholderTextColor="White"
         autoCapitalize="none"
         style={styles.input}
       />
@@ -103,7 +103,7 @@ export default function Register() {
         value={email}
         onChangeText={setEmail}
         placeholder="Email"
-        placeholderTextColor="#999"
+        placeholderTextColor="White"
         autoCapitalize="none"
         keyboardType="email-address"
         style={styles.input}
@@ -113,7 +113,7 @@ export default function Register() {
         value={password}
         onChangeText={setPassword}
         placeholder="Password"
-        placeholderTextColor="#999"
+        placeholderTextColor="White"
         secureTextEntry
         style={styles.input}
       />
@@ -122,7 +122,7 @@ export default function Register() {
         value={confirm}
         onChangeText={setConfirm}
         placeholder="Confirm Password"
-        placeholderTextColor="#999"
+        placeholderTextColor="White"
         secureTextEntry
         style={styles.input}
       />

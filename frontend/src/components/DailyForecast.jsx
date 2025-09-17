@@ -49,7 +49,9 @@ export default function DailyForecast({ items = [] }) {
       <Text style={styles.title}>7-Day Forecast</Text>
       <FlatList
         data={data}
-        keyExtractor={(it, idx) => String(it?.date ?? it?.Date ?? idx)}
+        keyExtractor={(item, index) =>
+          String(item?.date ?? item?.Date ?? index)
+        }
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.sep} />}
         contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 4 }}

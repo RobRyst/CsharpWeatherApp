@@ -225,7 +225,7 @@ export default function Profile() {
                         value={loginUsername}
                         onChangeText={setLoginUsername}
                         placeholder="Username or Email"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="white"
                         autoCapitalize="none"
                         style={styles.input}
                       />
@@ -233,7 +233,7 @@ export default function Profile() {
                         value={loginPassword}
                         onChangeText={setLoginPassword}
                         placeholder="Password"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="white"
                         secureTextEntry
                         style={styles.input}
                       />
@@ -256,7 +256,7 @@ export default function Profile() {
                         value={regUsername}
                         onChangeText={setRegUsername}
                         placeholder="Username"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="white"
                         autoCapitalize="none"
                         style={styles.input}
                       />
@@ -264,7 +264,7 @@ export default function Profile() {
                         value={regEmail}
                         onChangeText={setRegEmail}
                         placeholder="Email"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="white"
                         autoCapitalize="none"
                         keyboardType="email-address"
                         style={styles.input}
@@ -273,7 +273,7 @@ export default function Profile() {
                         value={regPassword}
                         onChangeText={setRegPassword}
                         placeholder="Password"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="white"
                         secureTextEntry
                         style={styles.input}
                       />
@@ -281,7 +281,7 @@ export default function Profile() {
                         value={regConfirm}
                         onChangeText={setRegConfirm}
                         placeholder="Confirm Password"
-                        placeholderTextColor="#999"
+                        placeholderTextColor="White"
                         secureTextEntry
                         style={styles.input}
                       />
