@@ -11,6 +11,7 @@ import {
 import { useWeather } from "../../context/WeatherContext";
 import { useNavigation } from "@react-navigation/native";
 import WeatherBackground from "../../components/WeatherBackground";
+import ScreenTransition from "../../components/ScreenTransition";
 
 export default function Search() {
   const nav = useNavigation();
@@ -64,60 +65,63 @@ export default function Search() {
 
   return (
     <WeatherBackground>
-      <View style={styles.wrap}>
-        <Text style={styles.title}>Search location</Text>
+      <ScreenTransition>
+        <View style={styles.wrap}>
+          <Text style={styles.title}>Search location</Text>
 
-        <TextInput
-          style={styles.input}
-          value={query}
-          onChangeText={onChange}
-          placeholder="City or place"
-          placeholderTextColor="#999"
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
+          <TextInput
+            style={styles.input}
+            value={query}
+            onChangeText={onChange}
+            placeholder="Enter the City or place"
+            placeholderTextColor="white"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
 
-        {error ? (
-          <Text style={styles.error}>{String(error?.message ?? error)}</Text>
-        ) : null}
+          {error ? (
+            <Text style={styles.error}>{String(error?.message ?? error)}</Text>
+          ) : null}
 
-        <FlatList
-          keyboardShouldPersistTaps="handled"
-          data={searchResults}
-          keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
-          renderItem={({ item }) => {
-            const existing = findFavoriteFor(item);
-            return (
-              <View style={styles.row}>
-                <TouchableOpacity
-                  style={{ flex: 1 }}
-                  onPress={() => onSelect(item)}
-                >
-                  <Text style={styles.name}>
-                    {item.name}
-                    {item.state ? ` (${item.state})` : ""}
-                    {item.country ? ` • ${item.country}` : ""}
-                  </Text>
-                  <Text style={styles.coords}>
-                    {Number(item.lat).toFixed(3)}, {Number(item.lon).toFixed(3)}
-                  </Text>
-                </TouchableOpacity>
+          <FlatList
+            keyboardShouldPersistTaps="handled"
+            data={searchResults}
+            keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
+            renderItem={({ item }) => {
+              const existing = findFavoriteFor(item);
+              return (
+                <View style={styles.row}>
+                  <TouchableOpacity
+                    style={{ flex: 1 }}
+                    onPress={() => onSelect(item)}
+                  >
+                    <Text style={styles.name}>
+                      {item.name}
+                      {item.state ? ` (${item.state})` : ""}
+                      {item.country ? ` • ${item.country}` : ""}
+                    </Text>
+                    <Text style={styles.coords}>
+                      {Number(item.lat).toFixed(3)},{" "}
+                      {Number(item.lon).toFixed(3)}
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => onToggleFav(item)}
-                  style={styles.heartWrap}
-                >
-                  <Text style={[styles.heart, existing && styles.heartOn]}>
-                    {existing ? "♥" : "♡"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            );
-          }}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          contentContainerStyle={{ paddingVertical: 12 }}
-        />
-      </View>
+                  <TouchableOpacity
+                    onPress={() => onToggleFav(item)}
+                    style={styles.heartWrap}
+                  >
+                    <Text style={[styles.heart, existing && styles.heartOn]}>
+                      {existing ? "♥" : "♡"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            contentContainerStyle={{ paddingVertical: 12 }}
+          />
+        </View>
+      </ScreenTransition>
     </WeatherBackground>
   );
 }
@@ -127,13 +131,14 @@ const styles = StyleSheet.create({
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
   error: { color: "#ff6b6b", marginTop: 8 },
   input: {
-    backgroundColor: "rgba(255,255,255,0.07)",
+    backgroundColor: "rgba(255,255,255,0.12)", // was 0.07
     color: "white",
-    borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderColor: "rgba(255,255,255,0.22)", // was 0.15
   },
   row: {
     flexDirection: "row",
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.15)",
   },
   name: { color: "white", fontSize: 16, fontWeight: "600" },
-  coords: { color: "#aaa", fontSize: 12, marginTop: 4 },
+  coords: { color: "white", fontSize: 12, marginTop: 4 },
   heartWrap: { paddingHorizontal: 8, paddingVertical: 4 },
   heart: { fontSize: 20, color: "#aaa" },
   heartOn: { color: "#ff718b" },

@@ -71,17 +71,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 10,
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(255,255,255,0.14)", // was 0.06
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderColor: "rgba(255,255,255,0.22)", // was 0.15
   },
   sep: { height: 8 },
   day: { color: "white", width: 60, fontSize: 14, fontWeight: "600" },
   mid: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   icon: { width: 28, height: 28 },
-  desc: { color: "rgba(255,255,255,0.9)", fontSize: 13, flexShrink: 1 },
+  desc: { color: "rgba(255,255,255,0.95)", fontSize: 13, flexShrink: 1 }, // was 0.9
   right: { alignItems: "flex-end", gap: 4 },
-  pop: { color: "rgba(135,206,250,0.95)", fontSize: 12, fontWeight: "600" },
+  pop: { color: "rgba(185,220,255,0.98)", fontSize: 12, fontWeight: "600" }, // a bit brighter
   temps: { color: "white", fontSize: 14, fontWeight: "600" },
 });

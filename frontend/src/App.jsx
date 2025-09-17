@@ -5,10 +5,13 @@ import {
 } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
+import { enableScreens } from "react-native-screens";
 
 import NavBar from "./components/NavBar";
 import { WeatherProvider } from "./context/WeatherContext";
 import { AuthProvider } from "./context/AuthContext";
+
+enableScreens(true);
 
 export default function App() {
   return (

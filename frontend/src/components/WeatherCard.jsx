@@ -65,12 +65,12 @@ export default function WeatherCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(255,255,255,0.18)", // was 0.06
     borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderColor: "rgba(255,255,255,0.22)", // was 0.15
   },
   headerRow: {
     flexDirection: "row",
@@ -82,19 +82,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   desc: {
-    color: "rgba(255,255,255,0.9)",
+    color: "rgba(255,255,255,0.95)", // was 0.90
     fontSize: 14,
     marginTop: 2,
     textTransform: "capitalize",
   },
-  icon: {
-    width: 64,
-    height: 64,
-    marginLeft: 8,
-  },
-  centerRow: {
-    alignItems: "flex-start",
-  },
+  icon: { width: 64, height: 64, marginLeft: 8 },
+  centerRow: { alignItems: "flex-start" },
   temp: {
     color: "white",
     fontSize: 56,
@@ -102,7 +96,7 @@ const styles = StyleSheet.create({
     lineHeight: 60,
   },
   feels: {
-    color: "rgba(255,255,255,0.85)",
+    color: "rgba(255,255,255,0.92)", // was 0.85
     fontSize: 14,
     marginTop: 4,
   },
@@ -113,11 +107,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   meta: {
-    color: "rgba(255,255,255,0.9)",
+    color: "rgba(255,255,255,0.95)", // was 0.90
     fontSize: 13,
   },
-  dot: {
-    color: "rgba(255,255,255,0.5)",
-    marginHorizontal: 2,
-  },
+  dot: { color: "rgba(255,255,255,0.6)", marginHorizontal: 2 }, // was 0.5
 });
