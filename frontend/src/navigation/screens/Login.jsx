@@ -89,8 +89,8 @@ export default function Login() {
         <Button title="Login" onPress={handleLogin} />
       )}
 
-      {error && <Text style={styles.error}>❌ {error}</Text>}
-      {success && <Text style={styles.success}>✅ Login successful!</Text>}
+      {error && <Text style={styles.error}>{error}</Text>}
+      {success && <Text style={styles.success}>Login successful!</Text>}
     </KeyboardAvoidingView>
   );
 }

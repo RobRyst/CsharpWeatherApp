@@ -96,7 +96,7 @@ export default function Favorites() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "#000", padding: 16 },
+  container: { flex: 1, padding: 16, backgroundColor: "transparent" },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
   hint: { color: "#ccc" },
   row: {

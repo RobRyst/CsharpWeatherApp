@@ -10,6 +10,7 @@ import { useWeather } from "../../context/WeatherContext";
 import WeatherCard from "../../components/WeatherCard";
 import HourlyForecast from "../../components/HourlyForecast";
 import WeeklyForecast from "../../components/WeeklyForecast";
+import WeatherBackground from "../../components/WeatherBackground";
 
 export default function Dashboard() {
   const {
@@ -49,6 +50,7 @@ export default function Dashboard() {
     if (!selected) return;
 
     let cancelled = false;
+
     (async () => {
       setLoading(true);
       try {
@@ -80,6 +82,7 @@ export default function Dashboard() {
           setHourly(Array.isArray(h) ? h : []);
           setWeekly(Array.isArray(d) ? d : []);
         }
+      } catch (_e) {
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -91,71 +94,73 @@ export default function Dashboard() {
   }, [selected]);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 24 }}
-    >
-      <Text style={styles.title}>Dashboard</Text>
+    <WeatherBackground>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <Text style={styles.title}>Dashboard</Text>
 
-      {!selected ? (
-        <Text style={styles.hint}>
-          Search for a location (Search tab), then select it to load weather.
-        </Text>
-      ) : (loading || ctxLoading) && !wx ? (
-        <View style={styles.center}>
-          <ActivityIndicator color="#fff" />
-          <Text style={styles.hint}>Loading weather…</Text>
-        </View>
-      ) : error ? (
-        <Text style={styles.error}>{String(error)}</Text>
-      ) : !wx ? (
-        <Text style={styles.hint}>No current weather yet.</Text>
-      ) : (
-        <>
-          <WeatherCard
-            locationName={wx.LocationName}
-            countryCode={wx.CountryCode}
-            description={wx.Description}
-            icon={wx.Icon}
-            temperature={wx.Temperature}
-            feelsLike={wx.FeelsLikeTemperature}
-            min={wx.MinTemperature}
-            max={wx.MaxTemperature}
-            humidity={wx.Humidity}
-            windSpeed={wx.WindSpeed}
-          />
+        {!selected ? (
+          <Text style={styles.hint}>
+            Search for a location (Search tab), then select it to load weather.
+          </Text>
+        ) : (loading || ctxLoading) && !wx ? (
+          <View style={styles.center}>
+            <ActivityIndicator color="#fff" />
+            <Text style={styles.hint}>Loading weather…</Text>
+          </View>
+        ) : error ? (
+          <Text style={styles.error}>{String(error)}</Text>
+        ) : !wx ? (
+          <Text style={styles.hint}>No current weather yet.</Text>
+        ) : (
+          <>
+            <WeatherCard
+              locationName={wx.LocationName}
+              countryCode={wx.CountryCode}
+              description={wx.Description}
+              icon={wx.Icon}
+              temperature={wx.Temperature}
+              feelsLike={wx.FeelsLikeTemperature}
+              min={wx.MinTemperature}
+              max={wx.MaxTemperature}
+              humidity={wx.Humidity}
+              windSpeed={wx.WindSpeed}
+            />
 
-          <View style={{ height: 16 }} />
+            <View style={{ height: 16 }} />
 
-          {loading && hourly.length === 0 ? (
-            <View style={styles.center}>
-              <ActivityIndicator color="#fff" />
-            </View>
-          ) : hourly.length > 0 ? (
-            <HourlyForecast items={hourly} />
-          ) : (
-            <Text style={styles.hint}>No hourly data yet.</Text>
-          )}
+            {loading && hourly.length === 0 ? (
+              <View style={styles.center}>
+                <ActivityIndicator color="#fff" />
+              </View>
+            ) : hourly.length > 0 ? (
+              <HourlyForecast items={hourly} />
+            ) : (
+              <Text style={styles.hint}>No hourly data yet.</Text>
+            )}
 
-          <View style={{ height: 16 }} />
+            <View style={{ height: 16 }} />
 
-          {loading && weekly.length === 0 ? (
-            <View style={styles.center}>
-              <ActivityIndicator color="#fff" />
-            </View>
-          ) : weekly.length > 0 ? (
-            <WeeklyForecast items={weekly} />
-          ) : (
-            <Text style={styles.hint}>No weekly data yet.</Text>
-          )}
-        </>
-      )}
-    </ScrollView>
+            {loading && weekly.length === 0 ? (
+              <View style={styles.center}>
+                <ActivityIndicator color="#fff" />
+              </View>
+            ) : weekly.length > 0 ? (
+              <WeeklyForecast items={weekly} />
+            ) : (
+              <Text style={styles.hint}>No weekly data yet.</Text>
+            )}
+          </>
+        )}
+      </ScrollView>
+    </WeatherBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "rgba(0,0,0,0.01)" },
+  container: { flex: 1, padding: 16, backgroundColor: "transparent" },
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 16 },
   hint: { color: "#ccc" },
   error: { color: "#ff6b6b" },

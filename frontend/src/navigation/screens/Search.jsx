@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useWeather } from "../../context/WeatherContext";
 import { useNavigation } from "@react-navigation/native";
+import WeatherBackground from "../../components/WeatherBackground";
 
 export default function Search() {
   const nav = useNavigation();
@@ -62,60 +63,62 @@ export default function Search() {
   }, []);
 
   return (
-    <View style={styles.wrap}>
-      <Text style={styles.title}>Search location</Text>
+    <WeatherBackground>
+      <View style={styles.wrap}>
+        <Text style={styles.title}>Search location</Text>
 
-      <TextInput
-        style={styles.input}
-        value={query}
-        onChangeText={onChange}
-        placeholder="City or place"
-        placeholderTextColor="#999"
-        autoCorrect={false}
-        autoCapitalize="none"
-      />
+        <TextInput
+          style={styles.input}
+          value={query}
+          onChangeText={onChange}
+          placeholder="City or place"
+          placeholderTextColor="#999"
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
 
-      {error ? (
-        <Text style={styles.error}>{String(error?.message ?? error)}</Text>
-      ) : null}
+        {error ? (
+          <Text style={styles.error}>{String(error?.message ?? error)}</Text>
+        ) : null}
 
-      <FlatList
-        keyboardShouldPersistTaps="handled"
-        data={searchResults}
-        keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
-        renderItem={({ item }) => {
-          const existing = findFavoriteFor(item);
-          return (
-            <View style={styles.row}>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => onSelect(item)}
-              >
-                <Text style={styles.name}>
-                  {item.name}
-                  {item.state ? ` (${item.state})` : ""}
-                  {item.country ? ` • ${item.country}` : ""}
-                </Text>
-                <Text style={styles.coords}>
-                  {Number(item.lat).toFixed(3)}, {Number(item.lon).toFixed(3)}
-                </Text>
-              </TouchableOpacity>
+        <FlatList
+          keyboardShouldPersistTaps="handled"
+          data={searchResults}
+          keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
+          renderItem={({ item }) => {
+            const existing = findFavoriteFor(item);
+            return (
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={{ flex: 1 }}
+                  onPress={() => onSelect(item)}
+                >
+                  <Text style={styles.name}>
+                    {item.name}
+                    {item.state ? ` (${item.state})` : ""}
+                    {item.country ? ` • ${item.country}` : ""}
+                  </Text>
+                  <Text style={styles.coords}>
+                    {Number(item.lat).toFixed(3)}, {Number(item.lon).toFixed(3)}
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => onToggleFav(item)}
-                style={styles.heartWrap}
-              >
-                <Text style={[styles.heart, existing && styles.heartOn]}>
-                  {existing ? "♥" : "♡"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-        contentContainerStyle={{ paddingVertical: 12 }}
-      />
-    </View>
+                <TouchableOpacity
+                  onPress={() => onToggleFav(item)}
+                  style={styles.heartWrap}
+                >
+                  <Text style={[styles.heart, existing && styles.heartOn]}>
+                    {existing ? "♥" : "♡"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          contentContainerStyle={{ paddingVertical: 12 }}
+        />
+      </View>
+    </WeatherBackground>
   );
 }
 

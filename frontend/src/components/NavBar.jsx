@@ -15,7 +15,7 @@ export default function NavBar() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        sceneContainerStyle: { backgroundColor: "rgba(0,0,0,0.01)" },
+        sceneContainerStyle: { backgroundColor: "#000" },
         tabBarStyle: {
           backgroundColor: "rgba(0,0,0,0.6)",
           borderTopWidth: 0.5,
