@@ -7,7 +7,7 @@ namespace backend.Domains.Interfaces
     {
         Task<IEnumerable<WeatherModel>> GetAllWeatherAsync();
 
-        Task<IEnumerable<HourlyForecastItemDto>> GetHourlyForecastAsync(
+        Task<IEnumerable<HourlyForecastDto>> GetHourlyForecastAsync(
             double lat, double lon, int hours = 24, string units = "metric", string lang = "en");
 
         Task<IEnumerable<DailyForecastItemDto>> GetWeeklyForecastAsync(

@@ -1,6 +1,6 @@
 namespace backend.Dtos
 {
-    public sealed class HourlyForecastItemDto
+    public sealed class HourlyForecastDto
     {
         public DateTimeOffset Time { get; init; }
         public double Temperature { get; init; }
@@ -10,5 +10,6 @@ namespace backend.Dtos
         public double? PrecipitationProbability { get; init; }
         public string Description { get; init; } = string.Empty;
         public string Icon { get; init; } = string.Empty;
+        public int TimezoneOffsetSeconds { get; init; }
     }
 }

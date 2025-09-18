@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Infrastructure.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
-
         public DbSet<Location> Locations => Set<Location>();
         public DbSet<Weather> Weather => Set<Weather>();
         public DbSet<User> Users => Set<User>();
@@ -17,7 +15,6 @@ namespace backend.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Users
             modelBuilder.Entity<User>()
                 .HasIndex(user => user.Username)
                 .IsUnique();
@@ -26,14 +23,12 @@ namespace backend.Infrastructure.Data
                 .HasIndex(user => user.Email)
                 .IsUnique();
 
-            // Weather / Location
             modelBuilder.Entity<Weather>()
                 .HasOne(weather => weather.Location)
                 .WithMany(location => location.Observations)
                 .HasForeignKey(weather => weather.LocationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Favorites
             modelBuilder.Entity<FavoriteLocation>(builder =>
             {
                 builder.HasKey(favorite => favorite.Id);

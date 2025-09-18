@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
 
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
-  hint: { color: "#ddd" },
+  hint: { color: "white" },
 
   row: {
     flexDirection: "row",

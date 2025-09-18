@@ -12,5 +12,6 @@ namespace backend.Dtos
         public DateTimeOffset? Sunset { get; init; }
         public string Description { get; init; } = string.Empty;
         public string Icon { get; init; } = string.Empty;
+        public int TimezoneOffsetSeconds { get; init; }
     }
 }

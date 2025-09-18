@@ -10,14 +10,16 @@ export default function HourlyForecast({ items = [] }) {
     const feels = item.feelsLike ?? item.FeelsLike;
     const icon = item.icon ?? item.Icon ?? "01d";
     const desc = item.description ?? item.Description ?? "";
+    const tz = item.timezoneOffsetSeconds ?? item.TimezoneOffsetSeconds ?? 0;
 
     const dt = time ? new Date(time) : null;
     const hourLabel =
       dt && !isNaN(dt.getTime())
-        ? dt.toLocaleTimeString(undefined, {
+        ? new Date(dt.getTime() + tz * 1000).toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
+            timeZone: "UTC",
           })
         : "--:--";
 
@@ -69,19 +71,14 @@ const styles = StyleSheet.create({
     width: 100,
     alignItems: "center",
     paddingVertical: 12,
-    backgroundColor: "rgba(255,255,255,0.16)", // was 0.06
+    backgroundColor: "rgba(255,255,255,0.16)",
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.22)", // was 0.15
+    borderColor: "rgba(255,255,255,0.22)",
   },
-  hour: { color: "rgba(255,255,255,0.95)", fontSize: 12, marginBottom: 4 }, // was 0.9
+  hour: { color: "rgba(255,255,255,0.95)", fontSize: 12, marginBottom: 4 },
   icon: { width: 36, height: 36, marginVertical: 4 },
   temp: { color: "white", fontSize: 16, fontWeight: "600" },
-  feels: { color: "rgba(255,255,255,0.9)", fontSize: 11, marginTop: 2 }, // was 0.85
-  desc: {
-    color: "rgba(255,255,255,0.9)", // was 0.85
-    fontSize: 11,
-    marginTop: 4,
-    textAlign: "center",
-  },
+  feels: { color: "white", fontSize: 11, marginTop: 2 },
+  desc: { color: "white", fontSize: 11, marginTop: 4, textAlign: "center" },
 });

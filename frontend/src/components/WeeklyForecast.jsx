@@ -5,18 +5,23 @@ export default function WeeklyForecast({ items = [] }) {
   const data = Array.isArray(items) ? items : [];
 
   const renderItem = ({ item }) => {
-    const date = item.date ?? item.Date;
+    const date = item.date ?? item.Date; // offset-aware from server, but we still normalize
     const minT = item.minTemperature ?? item.MinTemperature ?? 0;
     const maxT = item.maxTemperature ?? item.MaxTemperature ?? 0;
     const icon = item.icon ?? item.Icon ?? "01d";
     const desc = item.description ?? item.Description ?? "";
     const popVal =
       item.precipitationProbability ?? item.PrecipitationProbability;
+    const timezone =
+      item.timezoneOffsetSeconds ?? item.TimezoneOffsetSeconds ?? 0;
 
     const dt = date ? new Date(date) : null;
     const isValidDate = dt && !isNaN(dt.getTime());
     const dayLabel = isValidDate
-      ? dt.toLocaleDateString(undefined, { weekday: "short" })
+      ? new Date(dt.getTime() + timezone * 1000).toLocaleDateString(undefined, {
+          weekday: "short",
+          timeZone: "UTC",
+        })
       : "--";
 
     const iconUrl = `https://openweathermap.org/img/wn/${icon}.png`;
@@ -71,17 +76,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 10,
-    backgroundColor: "rgba(255,255,255,0.14)", // was 0.06
+    backgroundColor: "rgba(255,255,255,0.14)",
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.22)", // was 0.15
+    borderColor: "rgba(255,255,255,0.22)",
   },
   sep: { height: 8 },
   day: { color: "white", width: 60, fontSize: 14, fontWeight: "600" },
   mid: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   icon: { width: 28, height: 28 },
-  desc: { color: "rgba(255,255,255,0.95)", fontSize: 13, flexShrink: 1 }, // was 0.9
+  desc: { color: "rgba(255,255,255,0.95)", fontSize: 13, flexShrink: 1 },
   right: { alignItems: "flex-end", gap: 4 },
-  pop: { color: "rgba(185,220,255,0.98)", fontSize: 12, fontWeight: "600" }, // a bit brighter
+  pop: { color: "rgba(185,220,255,0.98)", fontSize: 12, fontWeight: "600" },
   temps: { color: "white", fontSize: 14, fontWeight: "600" },
 });

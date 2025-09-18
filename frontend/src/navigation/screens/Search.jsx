@@ -66,60 +66,64 @@ export default function Search() {
   return (
     <WeatherBackground>
       <ScreenTransition>
-        <View style={styles.wrap}>
-          <Text style={styles.title}>Search location</Text>
+        <View style={styles.container}>
+          <View style={styles.panel}>
+            <Text style={styles.title}>Search location</Text>
 
-          <TextInput
-            style={styles.input}
-            value={query}
-            onChangeText={onChange}
-            placeholder="Enter the City or place"
-            placeholderTextColor="white"
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
+            <TextInput
+              style={styles.input}
+              value={query}
+              onChangeText={onChange}
+              placeholder="Enter the City or place"
+              placeholderTextColor="white"
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
 
-          {error ? (
-            <Text style={styles.error}>{String(error?.message ?? error)}</Text>
-          ) : null}
+            {error ? (
+              <Text style={styles.error}>
+                {String(error?.message ?? error)}
+              </Text>
+            ) : null}
 
-          <FlatList
-            keyboardShouldPersistTaps="handled"
-            data={searchResults}
-            keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
-            renderItem={({ item }) => {
-              const existing = findFavoriteFor(item);
-              return (
-                <View style={styles.row}>
-                  <TouchableOpacity
-                    style={{ flex: 1 }}
-                    onPress={() => onSelect(item)}
-                  >
-                    <Text style={styles.name}>
-                      {item.name}
-                      {item.state ? ` (${item.state})` : ""}
-                      {item.country ? ` • ${item.country}` : ""}
-                    </Text>
-                    <Text style={styles.coords}>
-                      {Number(item.lat).toFixed(3)},{" "}
-                      {Number(item.lon).toFixed(3)}
-                    </Text>
-                  </TouchableOpacity>
+            <FlatList
+              keyboardShouldPersistTaps="handled"
+              data={searchResults}
+              keyExtractor={(item, idx) => `${item.lat},${item.lon},${idx}`}
+              renderItem={({ item }) => {
+                const existing = findFavoriteFor(item);
+                return (
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={{ flex: 1 }}
+                      onPress={() => onSelect(item)}
+                    >
+                      <Text style={styles.name}>
+                        {item.name}
+                        {item.state ? ` (${item.state})` : ""}
+                        {item.country ? ` • ${item.country}` : ""}
+                      </Text>
+                      <Text style={styles.coords}>
+                        {Number(item.lat).toFixed(3)},{" "}
+                        {Number(item.lon).toFixed(3)}
+                      </Text>
+                    </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={() => onToggleFav(item)}
-                    style={styles.heartWrap}
-                  >
-                    <Text style={[styles.heart, existing && styles.heartOn]}>
-                      {existing ? "♥" : "♡"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            contentContainerStyle={{ paddingVertical: 12 }}
-          />
+                    <TouchableOpacity
+                      onPress={() => onToggleFav(item)}
+                      style={styles.heartWrap}
+                    >
+                      <Text style={[styles.heart, existing && styles.heartOn]}>
+                        {existing ? "♥" : "♡"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              contentContainerStyle={{ paddingVertical: 12 }}
+            />
+          </View>
         </View>
       </ScreenTransition>
     </WeatherBackground>
@@ -127,19 +131,29 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "transparent", padding: 16 },
+  // outer container (matches Profile/Favorites)
+  container: { flex: 1, padding: 16, backgroundColor: "transparent" },
+  panel: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
+    padding: 16,
+  },
+
   title: { color: "white", fontSize: 22, fontWeight: "600", marginBottom: 12 },
   error: { color: "#ff6b6b", marginTop: 8 },
+
   input: {
-    backgroundColor: "rgba(255,255,255,0.12)", // was 0.07
+    backgroundColor: "rgba(255,255,255,0.12)",
     color: "white",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
     marginBottom: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.22)", // was 0.15
+    borderColor: "rgba(255,255,255,0.22)",
   },
+
   row: {
     flexDirection: "row",
     alignItems: "center",

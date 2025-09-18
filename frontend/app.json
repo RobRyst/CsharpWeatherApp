@@ -10,14 +10,18 @@
     "scheme": "frontend",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.frontend"
+      "bundleIdentifier": "com.frontend",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to show local weather information."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.frontend"
+      "package": "com.frontend",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,7 +35,8 @@
           "image": "./assets/splash-icon.png"
         }
       ],
-      "react-native-edge-to-edge"
+      "react-native-edge-to-edge",
+      "expo-location"
     ]
   }
 }

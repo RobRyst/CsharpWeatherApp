@@ -7,6 +7,8 @@ import React, {
   useEffect,
 } from "react";
 import axios from "axios";
+import * as Location from "expo-location";
+import { Platform } from "react-native";
 import { useAuth } from "./AuthContext";
 
 const WeatherContext = createContext(null);
@@ -213,6 +215,90 @@ export function WeatherProvider({ children }) {
     [token, findFavoriteFor, removeFavorite, addFavorite]
   );
 
+  const autoDetectLocation = useCallback(async () => {
+    try {
+      if (selected?.lat && selected?.lon) return;
+
+      let coords = null;
+
+      if (Platform.OS === "web" && "geolocation" in navigator) {
+        coords = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) =>
+              resolve({
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+              }),
+            (err) => reject(err),
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 10000 }
+          );
+        });
+      } else {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Location permission not granted");
+          return;
+        }
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+          mayShowUserSettingsDialog: true,
+        });
+        coords = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        };
+      }
+
+      if (!coords) return;
+
+      const provisional = {
+        name: "Current location",
+        country: "",
+        state: null,
+        lat: coords.latitude,
+        lon: coords.longitude,
+      };
+      setSelected(provisional);
+
+      const wx = await fetchCurrent({
+        lat: coords.latitude,
+        lon: coords.longitude,
+      });
+
+      const pretty = {
+        name: wx?.name || "Current location",
+        country: wx?.sys?.country || "",
+        state: null,
+        lat: coords.latitude,
+        lon: coords.longitude,
+      };
+      setSelected(pretty);
+
+      fetchHourly({
+        lat: coords.latitude,
+        lon: coords.longitude,
+        hours: 24,
+        units: "metric",
+        lang: "en",
+      });
+      fetchDaily({
+        lat: coords.latitude,
+        lon: coords.longitude,
+        days: 7,
+        units: "metric",
+        lang: "en",
+      });
+    } catch (err) {
+      console.log("Auto-detect location failed:", err?.message || err);
+    }
+  }, [selected, fetchCurrent, fetchHourly, fetchDaily]);
+
+  useEffect(() => {
+    if (!selected) {
+      autoDetectLocation();
+    }
+  }, [selected, autoDetectLocation]);
+
   useEffect(() => {
     (async () => {
       await loadFavorites();
@@ -260,6 +346,7 @@ export function WeatherProvider({ children }) {
       fetchCurrent,
       fetchHourly,
       fetchDaily,
+      autoDetectLocation,
     }),
     [
       token,
@@ -282,6 +369,7 @@ export function WeatherProvider({ children }) {
       loadFavorites,
       addFavorite,
       removeFavorite,
+      autoDetectLocation,
     ]
   );
 

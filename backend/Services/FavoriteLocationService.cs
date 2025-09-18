@@ -24,6 +24,7 @@ namespace backend.Services
                     State = favorite.State,
                     Latitude = favorite.Latitude,
                     Longitude = favorite.Longitude,
+                    IsDefault = favorite.IsDefault,
                     CreatedAt = favorite.CreatedAt
                 })
                 .ToListAsync(ct);

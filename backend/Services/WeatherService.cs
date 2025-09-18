@@ -2,7 +2,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using backend.Domains.Interfaces;
-using backend.Domains.Models;
 using backend.Dtos;
 using Microsoft.Extensions.Configuration;
 
@@ -14,27 +13,24 @@ namespace backend.Services
         private readonly ILogger<WeatherService> _logger;
         private readonly string _apiKey;
 
-        public WeatherService(HttpClient httpClient, ILogger<WeatherService> logger, IConfiguration config)
+        public WeatherService(IHttpClientFactory httpFactory, ILogger<WeatherService> logger, IConfiguration config)
         {
-            _http = httpClient;
+            _http = httpFactory.CreateClient("openweather");
             _logger = logger;
-            _apiKey = config["OpenWeather:ApiKey"]
-                   ?? config["OPENWEATHER_API_KEY"]
-                   ?? throw new Exception("OpenWeather API key not configured");
-
-            if (_http.BaseAddress is null)
-                _http.BaseAddress = new Uri("https://api.openweathermap.org/");
+            _apiKey = config["OpenWeather:ApiKey"] ?? config["OPENWEATHER_API_KEY"]
+                      ?? throw new Exception("OpenWeather API key not configured");
         }
 
-        public Task<IEnumerable<WeatherModel>> GetAllWeatherAsync()
-            => Task.FromResult(Enumerable.Empty<WeatherModel>());
+        public Task<IEnumerable<backend.Domains.Models.WeatherModel>> GetAllWeatherAsync()
+            => Task.FromResult(Enumerable.Empty<backend.Domains.Models.WeatherModel>());
 
-        public async Task<IEnumerable<HourlyForecastItemDto>> GetHourlyForecastAsync(
+        public async Task<IEnumerable<HourlyForecastDto>> GetHourlyForecastAsync(
             double lat, double lon, int hours = 24, string units = "metric", string lang = "en")
         {
             var url = $"data/2.5/forecast?lat={lat}&lon={lon}&units={units}&lang={lang}&appid={_apiKey}";
             using var resp = await _http.GetAsync(url);
             var body = await resp.Content.ReadAsStringAsync();
+
             if (!resp.IsSuccessStatusCode)
             {
                 _logger.LogWarning("OpenWeather /forecast hourly error {Status}: {Body}", (int)resp.StatusCode, body);
@@ -43,33 +39,36 @@ namespace backend.Services
 
             var forecast = JsonSerializer.Deserialize<ForecastResponse>(body);
             if (forecast?.List is null || forecast.List.Count == 0)
-                return Enumerable.Empty<HourlyForecastItemDto>();
+                return Enumerable.Empty<HourlyForecastDto>();
 
+            var timezone = forecast.City?.Timezone ?? 0;
             var steps = Math.Max(1, (int)Math.Ceiling(hours / 3.0));
 
             return forecast.List
                 .OrderBy(x => x.Dt)
                 .Take(steps)
-                .Select(x => new HourlyForecastItemDto
+                .Select(x => new HourlyForecastDto
                 {
-                    Time = FromUnix(x.Dt),
+                    Time = FromUnixUtc(x.Dt),
                     Temperature = x.Main?.Temp ?? 0,
                     FeelsLike = x.Main?.Feels_like ?? x.Main?.Temp ?? 0,
                     Humidity = x.Main?.Humidity ?? 0,
                     WindSpeed = x.Wind?.Speed ?? 0,
                     PrecipitationProbability = x.Pop,
                     Description = x.Weather?.FirstOrDefault()?.Description ?? string.Empty,
-                    Icon = x.Weather?.FirstOrDefault()?.Icon ?? string.Empty
+                    Icon = x.Weather?.FirstOrDefault()?.Icon ?? string.Empty,
+                    TimezoneOffsetSeconds = timezone
                 })
                 .ToList();
         }
+
         public async Task<IEnumerable<DailyForecastItemDto>> GetWeeklyForecastAsync(
             double lat, double lon, int days = 7, string units = "metric", string lang = "en")
         {
             var url = $"data/2.5/forecast?lat={lat}&lon={lon}&units={units}&lang={lang}&appid={_apiKey}";
-
             using var resp = await _http.GetAsync(url);
             var body = await resp.Content.ReadAsStringAsync();
+
             if (!resp.IsSuccessStatusCode)
             {
                 _logger.LogWarning("OpenWeather /forecast daily error {Status}: {Body}", (int)resp.StatusCode, body);
@@ -80,23 +79,29 @@ namespace backend.Services
             if (forecast?.List is null || forecast.List.Count == 0)
                 return Enumerable.Empty<DailyForecastItemDto>();
 
-            var grouped = forecast.List.GroupBy(x => FromUnix(x.Dt).UtcDateTime.Date);
+            var tz = forecast.City?.Timezone ?? 0;
+            DateTimeOffset ToLocal(long unix) =>
+                DateTimeOffset.FromUnixTimeSeconds(unix).ToOffset(TimeSpan.FromSeconds(tz));
+
+            var grouped = forecast.List.GroupBy(x => ToLocal(x.Dt).Date);
 
             var daily = grouped.Select(g =>
             {
-                var min = g.Min(i => i.Main?.Temp_min ?? i.Main?.Temp ?? 0);
-                var max = g.Max(i => i.Main?.Temp_max ?? i.Main?.Temp ?? 0);
-                var humidity = g.Average(i => (double)(i.Main?.Humidity ?? 0));
-                var wind = g.Average(i => (double)(i.Wind?.Speed ?? 0));
-                var pop = g.Max(i => i.Pop ?? 0);
+                var min = g.Min(item => item.Main?.Temp_min ?? item.Main?.Temp ?? 0);
+                var max = g.Max(item => item.Main?.Temp_max ?? item.Main?.Temp ?? 0);
+                var humidity = g.Average(item => (double)(item.Main?.Humidity ?? 0));
+                var wind = g.Average(item => (double)(item.Wind?.Speed ?? 0));
+                var pop = g.Max(item => item.Pop ?? 0);
 
-                var pick = g.OrderBy(i => Math.Abs(FromUnix(i.Dt).Hour - 12)).FirstOrDefault();
+                var pick = g.OrderBy(item => Math.Abs(ToLocal(item.Dt).Hour - 12)).FirstOrDefault();
                 var desc = pick?.Weather?.FirstOrDefault()?.Description ?? string.Empty;
                 var icon = pick?.Weather?.FirstOrDefault()?.Icon ?? string.Empty;
 
+                var localMidnight = new DateTimeOffset(g.Key, TimeSpan.FromSeconds(tz));
+
                 return new DailyForecastItemDto
                 {
-                    Date = new DateTimeOffset(g.Key, TimeSpan.Zero),
+                    Date = localMidnight,
                     MinTemperature = min,
                     MaxTemperature = max,
                     Humidity = humidity,
@@ -105,18 +110,19 @@ namespace backend.Services
                     Sunrise = null,
                     Sunset = null,
                     Description = desc,
-                    Icon = icon
+                    Icon = icon,
+                    TimezoneOffsetSeconds = tz
                 };
             })
-            .OrderBy(d => d.Date)
+            .OrderBy(date => date.Date)
             .Take(Math.Clamp(days, 1, 5))
             .ToList();
 
             return daily;
         }
 
-        private static DateTimeOffset FromUnix(long seconds) =>
-            DateTimeOffset.FromUnixTimeSeconds(seconds).ToUniversalTime();
+        private static DateTimeOffset FromUnixUtc(long seconds)
+            => DateTimeOffset.FromUnixTimeSeconds(seconds).ToUniversalTime();
 
         private sealed class ForecastResponse
         {
@@ -135,7 +141,8 @@ namespace backend.Services
             [JsonPropertyName("main")] public ForecastMain? Main { get; set; }
             [JsonPropertyName("weather")] public List<WeatherIcon>? Weather { get; set; }
             [JsonPropertyName("wind")] public ForecastWind? Wind { get; set; }
-            [JsonPropertyName("pop")] public double? Pop { get; set; } // 0..1
+            [JsonPropertyName("pop")] public double? Pop { get; set; }
+
         }
 
         private sealed class ForecastMain

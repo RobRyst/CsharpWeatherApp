@@ -1,21 +1,6 @@
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-/**
- * WeatherCard
- * @param {{
- *  locationName?: string,
- *  countryCode?: string,
- *  description?: string,
- *  icon?: string, // OpenWeather icon id (e.g., "10d")
- *  temperature?: number,
- *  feelsLike?: number,
- *  min?: number,
- *  max?: number,
- *  humidity?: number,
- *  windSpeed?: number,
- * }} props
- */
 export default function WeatherCard({
   locationName = "",
   countryCode = "",
@@ -29,7 +14,6 @@ export default function WeatherCard({
   windSpeed = 0,
 }) {
   const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
-
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
@@ -65,50 +49,31 @@ export default function WeatherCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "rgba(255,255,255,0.18)", // was 0.06
+    backgroundColor: "rgba(255,255,255,0.18)",
     borderRadius: 16,
     padding: 16,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.22)", // was 0.15
+    borderColor: "rgba(255,255,255,0.22)",
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  location: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "600",
-  },
+  headerRow: { flexDirection: "row", alignItems: "center" },
+  location: { color: "white", fontSize: 20, fontWeight: "600" },
   desc: {
-    color: "rgba(255,255,255,0.95)", // was 0.90
+    color: "rgba(255,255,255,0.95)",
     fontSize: 14,
     marginTop: 2,
     textTransform: "capitalize",
   },
   icon: { width: 64, height: 64, marginLeft: 8 },
   centerRow: { alignItems: "flex-start" },
-  temp: {
-    color: "white",
-    fontSize: 56,
-    fontWeight: "700",
-    lineHeight: 60,
-  },
-  feels: {
-    color: "rgba(255,255,255,0.92)", // was 0.85
-    fontSize: 14,
-    marginTop: 4,
-  },
+  temp: { color: "white", fontSize: 56, fontWeight: "700", lineHeight: 60 },
+  feels: { color: "rgba(255,255,255,0.92)", fontSize: 14, marginTop: 4 },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
     gap: 6,
   },
-  meta: {
-    color: "rgba(255,255,255,0.95)", // was 0.90
-    fontSize: 13,
-  },
-  dot: { color: "rgba(255,255,255,0.6)", marginHorizontal: 2 }, // was 0.5
+  meta: { color: "rgba(255,255,255,0.95)", fontSize: 13 },
+  dot: { color: "rgba(255,255,255,0.6)", marginHorizontal: 2 },
 });
