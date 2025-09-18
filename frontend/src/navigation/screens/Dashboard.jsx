@@ -33,6 +33,8 @@ export default function Dashboard() {
     const main = current.main || {};
     const wind = current.wind || {};
     const weather0 = (current.weather && current.weather[0]) || {};
+    const sys = current.sys || {};
+    const timezone = Number(current.timezone || 0);
     return {
       LocationName: selected.name,
       CountryCode: selected.country,
@@ -44,6 +46,9 @@ export default function Dashboard() {
       MaxTemperature: main.temp_max ?? main.temp ?? 0,
       Humidity: main.humidity ?? 0,
       WindSpeed: wind.speed ?? 0,
+      Sunrise: typeof sys.sunrise === "number" ? sys.sunrise : null, // unix (UTC)
+      Sunset: typeof sys.sunset === "number" ? sys.sunset : null, // unix (UTC)
+      TimezoneOffset: timezone,
     };
   }, [current, selected]);
 
@@ -131,6 +136,9 @@ export default function Dashboard() {
                   max={wx.MaxTemperature}
                   humidity={wx.Humidity}
                   windSpeed={wx.WindSpeed}
+                  sunrise={wx.Sunrise}
+                  sunset={wx.Sunset}
+                  tzOffset={wx.TimezoneOffset}
                 />
 
                 <View style={{ height: 16 }} />
