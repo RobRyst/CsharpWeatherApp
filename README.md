@@ -20,85 +20,85 @@ CSharpWeather delivers a seamless weather experience across platforms:
 
 ## ⚙️ Backend (API)
 
-.NET 8 / C# – ASP.NET Core Web API
+- .NET 8 / C# – ASP.NET Core Web API
 
-Entity Framework Core + MySQL — persistent storage for users and favorites
+- Entity Framework Core + MySQL — persistent storage for users and favorites
 
-JWT Authentication with role-based claims
+- JWT Authentication with role-based claims
 
-OpenWeather API integration for live weather data
+- OpenWeather API integration for live weather data
 
-In-memory caching to reduce API calls and boost performance
+- In-memory caching to reduce API calls and boost performance
 
-Swagger / Swashbuckle for API documentation and testing
+- Swagger / Swashbuckle for API documentation and testing
 
-Structured logging with ILogger
+- Structured logging with ILogger
 
 ## 📱 Frontend (Mobile App)
 
-React Native + Expo — Cross-platform mobile app (Android/iOS/Web)
+- React Native + Expo — Cross-platform mobile app (Android/iOS/Web)
 
-React Navigation — Multi-tab UI with smooth screen transitions
+- React Navigation — Multi-tab UI with smooth screen transitions
 
-Axios — Fetch weather and favorites data from the API
+- Axios — Fetch weather and favorites data from the API
 
-AsyncStorage — Local JWT token storage
+- AsyncStorage — Local JWT token storage
 
-Context API — Centralized state for weather data & authentication
+- Context API — Centralized state for weather data & authentication
 
-Tailored UI components — Weather backgrounds, icons, and animations
+- Tailored UI components — Weather backgrounds, icons, and animations
 
-FlatList & Pull-to-Refresh for smooth lists and data reload
+- FlatList & Pull-to-Refresh for smooth lists and data reload
 
 # ✨ Core Features
 ## 🌤️ Weather Forecasts
 
-Real-time current weather (temperature, humidity, wind)
+- Real-time current weather (temperature, humidity, wind)
 
-Hourly forecast for the next 24 hours
+- Hourly forecast for the next 24 hours
 
-Weekly forecast (up to 7 days) with icons and descriptions
+- Weekly forecast (up to 7 days) with icons and descriptions
 
 ## ⭐ Favorites
 
-Save and manage favorite locations
+- Save and manage favorite locations
 
-Set a default location
+- Set a default location
 
-One-tap navigation from favorite to dashboard
+- One-tap navigation from favorite to dashboard
 
 ## 🔐 Authentication
 
-Register and log in via the backend API
+- Register and log in via the backend API
 
-Protected routes (favorites) require valid JWT
+- Protected routes (favorites) require valid JWT
 
-Auto-login on app start if token is valid
+- Auto-login on app start if token is valid
 
 ## ⚠️ Error Handling & UX
 
-Friendly error messages for API/network failures
+- Friendly error messages for API/network failures
 
-Graceful fallback UI when data is unavailable
+- Graceful fallback UI when data is unavailable
 
-Backend logs upstream API errors (OpenWeather failures)
+- Backend logs upstream API errors (OpenWeather failures)
 
 ## 🧱 Architecture
 
-Backend: ASP.NET Core → Controllers → Services → EF Repositories
+- Backend: ASP.NET Core → Controllers → Services → EF Repositories
 
-Frontend: React Native components → WeatherContext/AuthContext → Axios API layer
+- Frontend: React Native components → WeatherContext/AuthContext → Axios API layer
 
-Data Flow: User action → Context → API → DB → Context → UI
+- Data Flow: User action → Context → API → DB → Context → UI
 
 ## 🧠 What I Learned
 
-Building a full-stack app from scratch with weather API integration
+- Building a full-stack app from scratch with weather API integration
 
-Implementing JWT authentication and secure favorites endpoints
+- Implementing JWT authentication and secure favorites endpoints
 
-Designing a mobile-first UI with smooth animations and weather visuals
+- Designing a mobile-first UI with smooth animations and weather visuals
 
-Structuring a clean Context-based state architecture in React Native
+- Structuring a clean Context-based state architecture in React Native
 
-Handling real-time data + API caching for performance and stability
+- Handling real-time data + API caching for performance and stability
