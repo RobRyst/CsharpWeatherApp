@@ -1,24 +1,24 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import { View, Text, Image, StyleSheet, FlatList } from "react-native";
 
 export default function WeeklyForecast({ items = [] }) {
-  const data = Array.isArray(items) ? items : [];
+  const data = useMemo(() => (Array.isArray(items) ? items : []), [items]);
 
-  const renderItem = ({ item }) => {
-    const date = item.date ?? item.Date; // offset-aware from server, but we still normalize
+  const renderItem = useCallback(({ item }) => {
+    const date = item.date ?? item.Date;
     const minT = item.minTemperature ?? item.MinTemperature ?? 0;
     const maxT = item.maxTemperature ?? item.MaxTemperature ?? 0;
     const icon = item.icon ?? item.Icon ?? "01d";
     const desc = item.description ?? item.Description ?? "";
     const popVal =
       item.precipitationProbability ?? item.PrecipitationProbability;
-    const timezone =
-      item.timezoneOffsetSeconds ?? item.TimezoneOffsetSeconds ?? 0;
+    const tz = item.timezoneOffsetSeconds ?? item.TimezoneOffsetSeconds ?? 0;
 
     const dt = date ? new Date(date) : null;
-    const isValidDate = dt && !isNaN(dt.getTime());
-    const dayLabel = isValidDate
-      ? new Date(dt.getTime() + timezone * 1000).toLocaleDateString(undefined, {
+    const isValid = dt && !isNaN(dt.getTime());
+    const localMs = isValid ? dt.getTime() + tz * 1000 : null;
+    const dayLabel = isValid
+      ? new Date(localMs).toLocaleDateString(undefined, {
           weekday: "short",
           timeZone: "UTC",
         })
@@ -47,17 +47,22 @@ export default function WeeklyForecast({ items = [] }) {
         </View>
       </View>
     );
-  };
+  }, []);
 
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>Weekly Forecast</Text>
       <FlatList
         data={data}
-        keyExtractor={(it, idx) => String(it?.date ?? it?.Date ?? idx)}
+        keyExtractor={(it, idx) =>
+          String(it?.date ?? it?.Date ?? `${it?.minTemperature ?? ""}-${idx}`)
+        }
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={styles.sep} />}
         contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 4 }}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No daily forecast yet.</Text>
+        }
       />
     </View>
   );
@@ -89,4 +94,5 @@ const styles = StyleSheet.create({
   right: { alignItems: "flex-end", gap: 4 },
   pop: { color: "rgba(185,220,255,0.98)", fontSize: 12, fontWeight: "600" },
   temps: { color: "white", fontSize: 14, fontWeight: "600" },
+  empty: { color: "#ccc", paddingHorizontal: 8, paddingVertical: 6 },
 });

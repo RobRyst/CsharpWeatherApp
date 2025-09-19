@@ -10,7 +10,7 @@ namespace backend.Domains.Interfaces
         Task<IEnumerable<HourlyForecastDto>> GetHourlyForecastAsync(
             double lat, double lon, int hours = 24, string units = "metric", string lang = "en");
 
-        Task<IEnumerable<DailyForecastItemDto>> GetWeeklyForecastAsync(
+        Task<IEnumerable<DailyForecastDto>> GetWeeklyForecastAsync(
             double lat, double lon, int days = 7, string units = "metric", string lang = "en");
     }
 }

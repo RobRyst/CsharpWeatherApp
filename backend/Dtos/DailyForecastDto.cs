@@ -1,6 +1,6 @@
 namespace backend.Dtos
 {
-    public sealed class DailyForecastItemDto
+    public sealed class DailyForecastDto
     {
         public DateTimeOffset Date { get; init; }
         public double MinTemperature { get; init; }

@@ -7,7 +7,6 @@ namespace backend.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [AllowAnonymous]
-
     public class WeatherController : ControllerBase
     {
         private readonly ILogger<WeatherController> _logger;
@@ -44,6 +43,11 @@ namespace backend.Controllers
                 var data = await _weatherService.GetHourlyForecastAsync(lat, lon, hours, units, lang);
                 return Ok(data);
             }
+            catch (HttpRequestException hex) when (hex.StatusCode.HasValue)
+            {
+                _logger.LogWarning(hex, "Upstream OpenWeather error (hourly)");
+                return StatusCode((int)hex.StatusCode.Value, new { error = "openweather_error", detail = hex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching hourly forecast");
@@ -61,6 +65,11 @@ namespace backend.Controllers
             {
                 var data = await _weatherService.GetWeeklyForecastAsync(lat, lon, days, units, lang);
                 return Ok(data);
+            }
+            catch (HttpRequestException hex) when (hex.StatusCode.HasValue)
+            {
+                _logger.LogWarning(hex, "Upstream OpenWeather error (weekly)");
+                return StatusCode((int)hex.StatusCode.Value, new { error = "openweather_error", detail = hex.Message });
             }
             catch (Exception ex)
             {

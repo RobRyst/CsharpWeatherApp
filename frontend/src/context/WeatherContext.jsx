@@ -126,16 +126,26 @@ export function WeatherProvider({ children }) {
 
   const loadFavorites = useCallback(async () => {
     if (!token) {
+      console.log("loadFavorites: no token -> skip");
       setFavorites([]);
       return [];
     }
     try {
-      const resp = await axios.get(FAVORITES_BASE, { headers: authHeader });
+      console.log("loadFavorites: fetching…");
+      const resp = await axios.get(FAVORITES_BASE, {
+        headers: authHeader,
+        params: { _ts: Date.now() }, // cache-buster for dev
+      });
       const data = Array.isArray(resp.data) ? resp.data : [];
+      console.log("loadFavorites: got", data.length, "items");
       setFavorites(data);
       return data;
     } catch (err) {
-      console.error("loadFavorites failed", err);
+      console.error(
+        "loadFavorites failed",
+        err?.response?.status,
+        err?.response?.data || err?.message
+      );
       return [];
     }
   }, [token]);
@@ -170,15 +180,26 @@ export function WeatherProvider({ children }) {
 
   const removeFavorite = useCallback(
     async (favoriteId) => {
-      if (!token) return false;
+      if (!token) {
+        console.warn("removeFavorite: no token");
+        return false;
+      }
+      console.log("removeFavorite: deleting id", favoriteId);
+      setFavorites((prev) => prev.filter((f) => f.id !== favoriteId));
       try {
-        await axios.delete(`${FAVORITES_BASE}/${favoriteId}`, {
+        const resp = await axios.delete(`${FAVORITES_BASE}/${favoriteId}`, {
           headers: authHeader,
         });
+        console.log("removeFavorite: status", resp.status);
         await loadFavorites();
         return true;
       } catch (err) {
-        console.error("removeFavorite failed", err);
+        console.error(
+          "removeFavorite failed",
+          err?.response?.status,
+          err?.response?.data || err?.message
+        );
+        await loadFavorites();
         return false;
       }
     },
