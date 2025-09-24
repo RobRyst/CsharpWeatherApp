@@ -131,7 +131,6 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  // outer container (matches Profile/Favorites)
   container: { flex: 1, padding: 16, backgroundColor: "transparent" },
   panel: {
     flex: 1,

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace backend.Dtos
 {
-    public sealed class CreateUserRequest
+    public sealed class CreateUserDto
     {
         [Required, MinLength(3), MaxLength(64)]
         public string Username { get; init; } = string.Empty;

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace backend.Dtos
 {
-    public sealed class UpdateUserRequest
+    public sealed class UpdateUserDto
     {
         [MinLength(3), MaxLength(64)]
         public string? Username { get; init; }

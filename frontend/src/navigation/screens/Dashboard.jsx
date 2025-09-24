@@ -46,8 +46,8 @@ export default function Dashboard() {
       MaxTemperature: main.temp_max ?? main.temp ?? 0,
       Humidity: main.humidity ?? 0,
       WindSpeed: wind.speed ?? 0,
-      Sunrise: typeof sys.sunrise === "number" ? sys.sunrise : null, // unix (UTC)
-      Sunset: typeof sys.sunset === "number" ? sys.sunset : null, // unix (UTC)
+      Sunrise: typeof sys.sunrise === "number" ? sys.sunrise : null,
+      Sunset: typeof sys.sunset === "number" ? sys.sunset : null,
       TimezoneOffset: timezone,
     };
   }, [current, selected]);

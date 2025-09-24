@@ -11,7 +11,7 @@ namespace backend.Services
         private readonly AppDbContext _db = db;
         private readonly ILogger<UserService> _logger = logger;
 
-        public async Task<UserDto> CreateAsync(CreateUserRequest req, CancellationToken ct)
+        public async Task<UserDto> CreateAsync(CreateUserDto req, CancellationToken ct)
         {
             if (await _db.Users.AnyAsync(user => user.Username == req.Username, ct))
                 throw new InvalidOperationException("Username already exists");
@@ -51,7 +51,7 @@ namespace backend.Services
             return (true, ToDto(user), user.Role);
         }
 
-        public async Task<UserDto?> UpdateAsync(int id, UpdateUserRequest req, CancellationToken ct)
+        public async Task<UserDto?> UpdateAsync(int id, UpdateUserDto req, CancellationToken ct)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
             if (user is null) return null;
@@ -91,7 +91,7 @@ namespace backend.Services
             return true;
         }
 
-        public async Task<PagedResult<UserDto>> GetUsersAsync(int page, int pageSize, CancellationToken ct)
+        public async Task<PagedResultDto<UserDto>> GetUsersAsync(int page, int pageSize, CancellationToken ct)
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -103,7 +103,7 @@ namespace backend.Services
                                .Select(user => ToDto(user))
                                .ToListAsync(ct);
 
-            return new PagedResult<UserDto>
+            return new PagedResultDto<UserDto>
             {
                 Items = items,
                 Page = page,

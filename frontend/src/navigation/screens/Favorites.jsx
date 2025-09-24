@@ -1,4 +1,3 @@
-// frontend/src/navigation/screens/Favorites.jsx
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View,

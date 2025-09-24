@@ -1,6 +1,6 @@
 namespace backend.Dtos
 {
-    public sealed class PagedResult<T>
+    public sealed class PagedResultDto<T>
     {
         public required IEnumerable<T> Items { get; init; }
         public int Page { get; init; }

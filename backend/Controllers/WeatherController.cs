@@ -26,18 +26,29 @@ namespace backend.Controllers
                 var weather = await _weatherService.GetAllWeatherAsync();
                 return Ok(weather);
             }
+            catch (HttpRequestException hex) when (hex.StatusCode.HasValue)
+            {
+                _logger.LogWarning(hex, "Upstream OpenWeather error (GetWeather)");
+                return StatusCode((int)hex.StatusCode.Value, new { error = "openweather_error", detail = hex.Message });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting weather information from Database");
+                _logger.LogError(ex, "Unexpected error getting weather information from DB");
                 return StatusCode(500, new { error = "internal server error" });
             }
         }
 
         [HttpGet("hourly")]
-        public async Task<IActionResult> GetHourly([FromQuery] double lat, [FromQuery] double lon,
-            [FromQuery] int hours = 24, [FromQuery] string units = "metric", [FromQuery] string lang = "en")
+        public async Task<IActionResult> GetHourly(
+            [FromQuery] double lat,
+            [FromQuery] double lon,
+            [FromQuery] int hours = 24,
+            [FromQuery] string units = "metric",
+            [FromQuery] string lang = "en")
         {
-            if (lat == 0 && lon == 0) return BadRequest(new { error = "lat and lon are required" });
+            if (lat == 0 && lon == 0)
+                return BadRequest(new { error = "lat and lon are required" });
+
             try
             {
                 var data = await _weatherService.GetHourlyForecastAsync(lat, lon, hours, units, lang);
@@ -50,16 +61,21 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching hourly forecast");
+                _logger.LogError(ex, "Unexpected error fetching hourly forecast");
                 return StatusCode(500, new { error = "internal server error" });
             }
         }
 
         [HttpGet("weekly")]
-        public async Task<IActionResult> GetWeekly([FromQuery] double lat, [FromQuery] double lon,
-            [FromQuery] int days = 7, [FromQuery] string units = "metric", [FromQuery] string lang = "en")
+        public async Task<IActionResult> GetWeekly(
+            [FromQuery] double lat,
+            [FromQuery] double lon,
+            [FromQuery] int days = 7,
+            [FromQuery] string units = "metric",
+            [FromQuery] string lang = "en")
         {
-            if (lat == 0 && lon == 0) return BadRequest(new { error = "lat and lon are required" });
+            if (lat == 0 && lon == 0)
+                return BadRequest(new { error = "lat and lon are required" });
 
             try
             {
@@ -73,7 +89,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching weekly forecast");
+                _logger.LogError(ex, "Unexpected error fetching weekly forecast");
                 return StatusCode(500, new { error = "internal server error" });
             }
         }

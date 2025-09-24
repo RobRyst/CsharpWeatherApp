@@ -10,13 +10,13 @@ namespace backend.Services
     {
         private readonly AppDbContext _db = db;
 
-        public async Task<IEnumerable<FavoriteDto>> GetMineAsync(int userId, CancellationToken ct)
+        public async Task<IEnumerable<FavoriteLocationDto>> GetMineAsync(int userId, CancellationToken ct)
         {
             return await _db.Favorites
                 .AsNoTracking()
                 .Where(favorite => favorite.UserId == userId)
                 .OrderByDescending(favorite => favorite.CreatedAt)
-                .Select(favorite => new FavoriteDto
+                .Select(favorite => new FavoriteLocationDto
                 {
                     Id = favorite.Id,
                     Name = favorite.Name,
@@ -30,7 +30,7 @@ namespace backend.Services
                 .ToListAsync(ct);
         }
 
-        public async Task<FavoriteDto> CreateAsync(int userId, CreateFavoriteRequest req, CancellationToken ct)
+        public async Task<FavoriteLocationDto> CreateAsync(int userId, CreateFavoriteRequest req, CancellationToken ct)
         {
             var lat = Math.Round(req.Latitude, 4);
             var lon = Math.Round(req.Longitude, 4);
@@ -51,7 +51,7 @@ namespace backend.Services
             _db.Favorites.Add(fav);
             await _db.SaveChangesAsync(ct);
 
-            return new FavoriteDto
+            return new FavoriteLocationDto
             {
                 Id = fav.Id,
                 Name = fav.Name,
